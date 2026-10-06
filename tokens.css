@@ -1,0 +1,46 @@
+/* 5100 雪域好运 · design tokens（与 DESIGN.md 同步） */
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700;900&display=swap");
+
+:root {
+  --glacier-navy: #14306B;
+  --tibet-blue: #2F63B0;
+  --sky: #8FBDEB;
+  --ice: #DCEBFA;
+  --snow: #F6FAFE;
+  --white: #FFFFFF;
+  --gold: #C49A5A;
+  --gold-light: #EAD3A6;
+  --gold-deep: #9C7438;
+  --lucky-red: #C8202A;
+  --ink-soft: #5A6785;
+  --ivory: #F6EEDF;
+  --paper: #FBF6EC;
+  --red: #B3161C;
+  --red-deep: #8E0F14;
+  --gold-line: rgba(196, 154, 90, .45);
+  --line: rgba(20, 48, 107, .10);
+
+  --g-sky: linear-gradient(180deg, #8FBDEB 0%, #DCEBFA 45%, #F6FAFE 100%);
+  --g-gold: linear-gradient(135deg, #EAD3A6, #C49A5A 55%, #9C7438);
+  --g-red: linear-gradient(180deg, #C8202A, #9E1218);
+  --g-navy: linear-gradient(160deg, #1D3F86, #14306B 60%, #0D2150);
+
+  --f-serif: "Noto Serif SC", "Songti SC", serif;
+  --f-latin: "Cormorant Garamond", "Times New Roman", serif;
+  --f-sans: "Noto Sans SC", -apple-system, "PingFang SC", sans-serif;
+  --f-brush: "Ma Shan Zheng", "Kaiti SC", cursive;
+  --f-caps: "Cinzel", "Cormorant Garamond", serif;
+
+  --r-card: 20px;
+  --r-input: 14px;
+  --shadow: 0 8px 24px rgba(20, 48, 107, .10);
+  --shadow-lg: 0 18px 48px rgba(20, 48, 107, .18);
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+}
+
+.gold-text {
+  background: var(--g-gold);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}

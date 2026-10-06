@@ -1,0 +1,2066 @@
+<!doctype html>
+<html lang="zh" class="demo">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>5100 Himalayan Guardians · Web App Demo</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; }
+  body { font-family: var(--f-sans); color: var(--glacier-navy); background: #EFE6D6; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  img { display: block; max-width: 100%; }
+
+  /* ========== 展示框架 ========== */
+  .stage { display: grid; grid-template-columns: 280px 1fr 320px; height: 100vh; }
+  .side { background: var(--paper); border-right: 1px solid var(--gold-line); overflow-y: auto; padding: 24px 16px; }
+  .side img { height: 32px; }
+  .side .name { font: 700 13px var(--f-caps); letter-spacing: .14em; margin-top: 8px; }
+  .side .cn { font: 700 15px var(--f-serif); margin: 2px 0 14px; }
+  .grp { font: 700 11px var(--f-caps); letter-spacing: .16em; color: var(--red); margin: 18px 6px 6px; }
+  .nav { display: flex; gap: 10px; align-items: center; width: 100%; border: 0; background: none; text-align: left; padding: 8px 10px; border-radius: 10px; font-size: 13.5px; }
+  .nav i { font-style: normal; font-size: 11px; color: var(--gold-deep); width: 20px; }
+  .nav.on { background: #fff; box-shadow: inset 3px 0 0 var(--red); font-weight: 700; }
+  .center { display: flex; align-items: center; justify-content: center; overflow: hidden; background: url(assets/bg-landing.jpg) center/cover; position: relative; }
+  .center::before { content: ""; position: absolute; inset: 0; background: rgba(239,230,214,.82); backdrop-filter: blur(6px); }
+  .notes { background: var(--paper); border-left: 1px solid var(--gold-line); padding: 28px 22px; overflow-y: auto; }
+  .notes .k { font: 700 11px var(--f-caps); letter-spacing: .16em; color: var(--red); }
+  .notes h3 { font: 700 22px var(--f-serif); margin: 6px 0 10px; }
+  .notes p { line-height: 1.8; color: var(--ink-soft); font-size: 14px; }
+  .notes .ux { background: #fff; border: 1px solid var(--gold-line); border-radius: 12px; padding: 12px 14px; font-size: 13px; line-height: 1.7; color: var(--glacier-navy); }
+  .notes .ux b { color: var(--red); }
+  .notes .pager { display: flex; gap: 10px; margin-top: 20px; }
+  .notes .pager button { flex: 1; height: 42px; border-radius: 12px; border: 1px solid var(--gold-line); background: #fff; }
+  .notes .pager button:last-child { background: var(--g-red); color: #fff; border: 0; }
+
+  .phone { width: 390px; height: 844px; border-radius: 52px; background: #111; padding: 11px; box-shadow: 0 40px 90px rgba(60,30,10,.3); position: relative; z-index: 1; }
+  .phone::before { content: ""; position: absolute; top: 21px; left: 50%; width: 108px; height: 30px; background: #111; border-radius: 20px; transform: translateX(-50%); z-index: 50; }
+  .screen { width: 100%; height: 100%; border-radius: 42px; overflow: hidden; position: relative; background: var(--ivory); }
+  @media (max-width: 900px) {
+    .stage { display: block; height: auto; }
+    .side, .notes { display: none; }
+    .center { height: 100vh; height: 100dvh; }
+    .center::before { display: none; }
+    .phone { width: 100%; height: 100%; border-radius: 0; padding: 0; box-shadow: none; transform: none !important; }
+    .phone::before { display: none; }
+    .screen { border-radius: 0; }
+  }
+
+  /* ========== App 通用 ========== */
+  .scr { position: absolute; inset: 0; display: none; flex-direction: column; background: var(--ivory); }
+  .scr.on { display: flex; animation: enter .4s var(--ease-out); }
+  @keyframes enter { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  .body { flex: 1; overflow-y: auto; padding: 0 18px 24px; scrollbar-width: none; position: relative; }
+  .body::-webkit-scrollbar { display: none; }
+  .paper { background: var(--ivory) radial-gradient(120% 60% at 50% 0%, #FFFBF3 0%, transparent 70%); }
+
+  .bar { display: flex; align-items: center; padding: 50px 14px 8px; position: relative; z-index: 3; }
+  .bar .ib { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--gold-line); background: rgba(255,255,255,.9); display: grid; place-items: center; }
+  .bar .ttl { flex: 1; text-align: center; margin-right: 38px; }
+  .bar .ttl b { display: block; font: 700 16px var(--f-serif); }
+  .bar .ttl small { font: 600 9.5px var(--f-caps); letter-spacing: .18em; color: var(--red); }
+
+  .caps { font: 700 11px var(--f-caps); letter-spacing: .18em; color: var(--red); }
+  .h1 { font: 700 26px/1.3 var(--f-serif); margin: 4px 0 6px; }
+  .brushgold { font-family: var(--f-brush); background: linear-gradient(180deg, #F3D9A0, #C08A3E 60%, #8E5F24); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { color: var(--ink-soft); font-size: 13.5px; line-height: 1.7; margin: 0 0 16px; }
+
+  .btn { width: 100%; height: 54px; border-radius: 14px; border: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; transition: transform .15s var(--ease-out); }
+  .btn:active { transform: scale(.97); }
+  .btn b { font: 700 16px var(--f-serif); letter-spacing: .08em; }
+  .btn small { font: 600 9px var(--f-caps); letter-spacing: .2em; opacity: .85; margin-top: 2px; }
+  .btn.red { background: var(--g-red); color: #fff; box-shadow: inset 0 0 0 1.5px rgba(234,211,166,.75), 0 10px 22px rgba(142,15,20,.28); }
+  .btn.ghost { background: #fff; color: var(--glacier-navy); box-shadow: inset 0 0 0 1px var(--gold-line); }
+  .btn.text { background: none; height: 40px; color: var(--ink-soft); }
+  .btn.text b { font: 500 13px var(--f-sans); letter-spacing: 0; }
+  .foot { padding: 10px 18px 28px; display: grid; gap: 8px; position: relative; z-index: 3; }
+
+  .card { background: var(--paper); border: 1px solid var(--gold-line); border-radius: 18px; padding: 16px; box-shadow: 0 6px 18px rgba(90,60,20,.07); }
+  .chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; }
+  .chip.red { background: var(--red); color: #fff; }
+  .chip.gold { background: #F3E4C4; color: var(--gold-deep); }
+  .chip.navy { background: var(--glacier-navy); color: #fff; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 12px; color: var(--ink-soft); margin: 0 0 5px 2px; }
+  .field input { width: 100%; height: 50px; border-radius: 12px; border: 1px solid var(--gold-line); background: #fff; padding: 0 14px; font: 15px var(--f-sans); color: var(--glacier-navy); outline: none; }
+  .field input:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(179,22,28,.1); }
+  .carpet { height: 18px; background: url(assets/border-carpet.jpg) center/auto 100% repeat-x, repeating-linear-gradient(90deg, #B3161C 0 10px, #14306B 10px 20px, #C49A5A 20px 24px); }
+
+  .tabs { display: flex; justify-content: space-around; padding: 8px 4px 24px; background: var(--paper); border-top: 1px solid var(--gold-line); position: relative; z-index: 5; }
+  .tabs button { border: 0; background: none; display: grid; justify-items: center; gap: 2px; font-size: 10.5px; color: #8A8F9F; width: 62px; }
+  .tabs button.on { color: var(--red); font-weight: 700; }
+  .tabs svg { width: 23px; height: 23px; }
+  .tabs .mid { margin-top: -24px; color: var(--red); font-weight: 700; }
+  .tabs .mid span { width: 54px; height: 54px; border-radius: 50%; background: var(--g-red); display: grid; place-items: center; border: 3px solid var(--paper); box-shadow: 0 6px 16px rgba(142,15,20,.35), inset 0 0 0 1.5px rgba(234,211,166,.8); color: #fff; }
+
+  .toast { position: absolute; left: 50%; top: 58px; transform: translate(-50%, -16px); background: var(--glacier-navy); color: #fff; padding: 10px 16px; border-radius: 99px; font-size: 13px; font-weight: 700; opacity: 0; transition: all .35s var(--ease-out); z-index: 90; white-space: nowrap; pointer-events: none; box-shadow: 0 8px 20px rgba(0,0,0,.25); }
+  .toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+  .modal { position: absolute; inset: 0; z-index: 80; display: none; align-items: flex-end; background: rgba(10,20,45,.55); backdrop-filter: blur(3px); }
+  .modal.on { display: flex; animation: fade .3s; }
+  @keyframes fade { from { opacity: 0; } }
+  .sheet { width: 100%; background: var(--paper); border-radius: 28px 28px 0 0; padding: 14px 18px 28px; position: relative; animation: up .45s var(--ease-out); }
+  @keyframes up { from { transform: translateY(40%); } }
+  .sheet .x { position: absolute; top: 30px; right: 28px; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(0,0,0,.5); color: #fff; font-size: 15px; z-index: 3; }
+  .grab { width: 40px; height: 4px; border-radius: 4px; background: #DCCFB8; margin: 0 auto 12px; }
+  .center-modal { align-items: center; justify-content: center; padding: 24px; }
+  .center-modal .sheet { border-radius: 26px; animation: pop .5s var(--ease-out); }
+  @keyframes pop { from { transform: scale(.85); opacity: 0; } }
+
+  /* 01 扫码落地 */
+  #landing { background: url(assets/bg-landing.jpg) center top/cover; }
+  #landing::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0) 55%, rgba(246,238,223,.95) 86%); pointer-events: none; }
+  #landing .bgv { position: absolute; left: 0; top: -16%; width: 100%; height: 116%; object-fit: cover; object-position: center center; z-index: 0; transition: opacity .8s ease; }
+  #landing .gname { position: absolute; left: 0; right: 0; bottom: 186px; z-index: 3; text-align: center; font: 700 10.5px var(--f-caps); letter-spacing: .16em; color: var(--glacier-navy); }
+  #landing .gname b { font: 700 15px var(--f-serif); letter-spacing: .1em; margin-right: 6px; color: var(--red); }
+  #landing .top { position: relative; z-index: 2; padding: 54px 20px 0; text-align: center; }
+  #landing .top img.logo { height: 44px; margin: 0 auto; }
+  #landing .series { font: 700 10.5px var(--f-caps); letter-spacing: .2em; margin-top: 6px; }
+  #landing .series small { display: block; font: 500 11px var(--f-serif); letter-spacing: .3em; margin-top: 2px; }
+  #landing h1 { font-size: 58px; line-height: 1.1; margin: 18px 0 0; font-weight: 400; }
+  #landing .tag { font: 700 11px var(--f-caps); letter-spacing: .22em; margin-top: 6px; }
+  #landing .cast { position: absolute; left: 0; right: 0; bottom: 172px; height: 210px; z-index: 2; }
+  #landing .cast img { position: absolute; bottom: 0; filter: drop-shadow(0 10px 10px rgba(40,30,20,.25)); }
+  #landing .foot { position: absolute; left: 0; right: 0; bottom: 18px; z-index: 3; }
+  .perks { display: flex; justify-content: center; gap: 14px; font-size: 11.5px; margin-bottom: 4px; }
+  .perks i { font-style: normal; color: var(--red); margin-right: 3px; }
+
+  .bless { padding-top: 6px; }
+  .bless .vid { position: relative; border-radius: 18px; overflow: hidden; aspect-ratio: 9/12; background: #000; box-shadow: 0 10px 24px rgba(0,0,0,.25); border: 2px solid var(--gold-light); }
+  .bless .vid video { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; display: block; }
+  .bless .vid .badge { position: absolute; top: 10px; left: 10px; }
+  .bless .vid .mute { position: absolute; bottom: 10px; right: 10px; width: 34px; height: 34px; border-radius: 50%; border: 0; background: rgba(0,0,0,.45); color: #fff; font-size: 15px; }
+  .bless h2 { font: 700 21px/1.35 var(--f-serif); margin: 14px 0 4px; text-align: center; }
+  .bless .steps3 { display: flex; justify-content: center; gap: 6px; font-size: 12px; color: var(--ink-soft); margin: 4px 0 14px; }
+  .bless .steps3 b { color: var(--red); }
+
+  /* AI 祝福 */
+  .tpls { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -18px; padding: 6px 18px 12px; scrollbar-width: none; }
+  .tpls::-webkit-scrollbar { display: none; }
+  .tpl { flex: 0 0 76%; scroll-snap-align: center; border: 0; padding: 0; background: none; text-align: center; }
+  .tpl .im { border-radius: 16px; overflow: hidden; aspect-ratio: 9/16; border: 3px solid transparent; transition: .25s var(--ease-out); box-shadow: 0 8px 20px rgba(90,60,20,.12); background: var(--g-navy); }
+  .tpl .im img { width: 100%; height: 100%; object-fit: cover; }
+  .tpl.on .im { border-color: var(--red); transform: translateY(-4px); }
+  .tpl .l { margin-top: 8px; font: 700 14px var(--f-serif); }
+  .tpl.plain .im { display: grid; place-items: center; color: #fff; text-align: center; }
+  .stepbar { display: flex; gap: 6px; margin: 2px 0 14px; }
+  .stepbar i { flex: 1; height: 4px; border-radius: 4px; background: #E6D8BE; }
+  .stepbar i.on { background: var(--red); }
+  .guide { position: relative; border-radius: 22px; height: 340px; overflow: hidden; background: url(assets/bg-landing.jpg) center 30%/cover; display: grid; place-items: center; border: 1px solid var(--gold-line); }
+  .guide::before { content: ""; position: absolute; inset: 0; background: rgba(251,246,236,.55); }
+  .guide .oval { position: relative; width: 168px; height: 216px; border-radius: 50%; border: 3px dashed var(--red); display: grid; place-items: center; color: var(--red); font: 700 13px var(--f-serif); text-align: center; background: rgba(255,255,255,.35); }
+  .tips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .tips div { background: var(--paper); border: 1px solid var(--gold-line); border-radius: 12px; padding: 8px 4px; text-align: center; font-size: 12px; }
+  .tips b { display: block; font-size: 18px; }
+  .wish { width: 100%; text-align: left; border: 1px solid var(--gold-line); background: var(--paper); border-radius: 14px; padding: 14px; margin-bottom: 8px; font: 15px/1.6 var(--f-serif); display: flex; gap: 12px; align-items: center; }
+  .wish.on { border: 2px solid var(--red); background: #fff; }
+  .wish i { font-style: normal; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #D9C7A6; flex: 0 0 20px; }
+  .wish.on i { border: 6px solid var(--red); }
+  .seg { display: flex; gap: 8px; }
+  .seg button { flex: 1; height: 40px; border-radius: 10px; border: 1px solid var(--gold-line); background: var(--paper); font-size: 13px; }
+  .seg button.on { background: var(--glacier-navy); color: #fff; border-color: var(--glacier-navy); }
+
+  #gen { background: var(--g-navy); color: #fff; }
+  #gen .ring { width: 220px; height: 220px; margin: 30px auto 0; position: relative; }
+  #gen .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  #gen .ring img { position: absolute; inset: 22px; width: 176px; height: 176px; object-fit: contain; animation: bob 2.2s ease-in-out infinite; }
+  @keyframes bob { 50% { transform: translateY(-8px); } }
+  #gen .pct { text-align: center; font: 700 30px var(--f-serif); margin-top: 12px; }
+  #gen .list { margin: 18px 12px 0; display: grid; gap: 10px; }
+  #gen .list div { display: flex; gap: 10px; align-items: center; font-size: 14px; opacity: .45; transition: opacity .3s; }
+  #gen .list div.ok { opacity: 1; }
+  #gen .list i { width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255,255,255,.4); display: grid; place-items: center; font-style: normal; font-size: 12px; }
+  #gen .list div.ok i { background: var(--g-gold); border: 0; color: var(--glacier-navy); }
+  #gen .fact { margin: 22px 12px 0; padding: 14px; border-radius: 14px; background: rgba(255,255,255,.08); border: 1px solid rgba(234,211,166,.3); font-size: 12px; line-height: 1.7; }
+
+  .video { position: relative; border-radius: 22px; overflow: hidden; aspect-ratio: 9/14; background: #000; border: 2px solid var(--gold-light); box-shadow: 0 14px 30px rgba(0,0,0,.2); }
+  .video video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .video .play { position: absolute; inset: 0; display: grid; place-items: center; }
+  .video .play span { width: 66px; height: 66px; border-radius: 50%; background: rgba(255,255,255,.9); display: grid; place-items: center; }
+  .row { display: flex; gap: 8px; }
+  .row .btn { flex: 1; }
+  .plats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .plat { border: 1px solid var(--gold-line); background: var(--paper); border-radius: 14px; padding: 12px 4px 8px; display: grid; justify-items: center; gap: 5px; font-size: 11px; }
+  .plat span { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; color: #fff; font-weight: 900; }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+
+  /* 注册 */
+  .regtop { height: 170px; background: url(assets/bg-landing.jpg) center 22%/cover; position: relative; flex: 0 0 170px; }
+  .regtop::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0) 30%, var(--ivory)); }
+  .regtop img { position: absolute; bottom: -8px; right: 16px; width: 120px; z-index: 2; filter: drop-shadow(0 8px 8px rgba(0,0,0,.2)); }
+  .codebox { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; margin: 6px 0 10px; }
+  .codebox span { height: 46px; border-radius: 10px; background: #fff; border: 1px solid var(--gold-line); display: grid; place-items: center; font: 700 18px var(--f-serif); }
+  .tabs2 { display: grid; grid-template-columns: 1fr 1fr; background: #EDE2CD; border-radius: 12px; padding: 4px; margin-bottom: 14px; }
+  .tabs2 button { border: 0; background: none; height: 38px; border-radius: 9px; font-weight: 700; font-size: 13px; color: var(--ink-soft); }
+  .tabs2 button.on { background: #fff; color: var(--glacier-navy); box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+  .drop { border: 2px dashed #D6C19C; border-radius: 16px; background: #fff; height: 200px; display: grid; place-items: center; text-align: center; color: var(--ink-soft); font-size: 13px; line-height: 1.7; }
+
+  #welcome { background: var(--g-navy); color: #fff; }
+  #welcome .glow { position: absolute; left: 50%; top: 150px; width: 340px; height: 340px; transform: translateX(-50%); background: radial-gradient(circle, rgba(234,211,166,.45), transparent 65%); }
+  .mcard { position: relative; border-radius: 18px; padding: 18px; background: linear-gradient(135deg, #FBF6EC, #EBDDC2); color: var(--glacier-navy); border: 1px solid var(--gold-light); overflow: hidden; height: 190px; display: flex; flex-direction: column; justify-content: space-between; }
+  .mcard::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 12px; background: repeating-linear-gradient(180deg, #B3161C 0 8px, #14306B 8px 16px, #C49A5A 16px 19px); }
+  .mcard img.lg { height: 30px; width: auto; align-self: flex-start; margin-left: 10px; }
+  .mcard img.gd { position: absolute; right: 6px; bottom: 0; width: 120px; }
+  .mcard .nm { margin-left: 10px; font: 700 17px var(--f-serif); }
+  .mcard .no { margin-left: 10px; font: 600 11px var(--f-caps); letter-spacing: .16em; color: var(--ink-soft); }
+  .gifts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .gift { border-radius: 16px; padding: 14px; background: rgba(255,255,255,.08); border: 1px solid rgba(234,211,166,.35); text-align: center; }
+  .gift b { display: block; font-size: 34px; font-weight: 400; }
+  .gift span { font-size: 12px; opacity: .85; }
+
+  /* 首页 */
+  #home .hero { position: relative; height: 440px; background: url(assets/bg-landing.jpg) center 35%/cover; }
+  #home .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0) 50%, var(--ivory) 98%); }
+  #home .hero::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 150px; z-index: 2; background: linear-gradient(180deg, rgba(251,246,236,.95) 30%, rgba(251,246,236,0)); pointer-events: none; }
+  #home .hero::after { z-index: 1; pointer-events: none; background: linear-gradient(180deg, rgba(255,255,255,0) 70%, var(--ivory) 100%) !important; }
+  #home .hero .hi { position: absolute; top: 52px; left: 18px; right: 18px; z-index: 3; display: flex; justify-content: space-between; align-items: flex-start; }
+  #home .hero .hi img { height: 30px; }
+  #home .hero .hi b { display: block; font: 700 22px var(--f-serif); }
+  #home .hero .petv { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 62%; z-index: 1; display: none; cursor: pointer; }
+  #home .hero.hasv .petv { display: block; }
+  #home .hero.hasv .pet { display: none; }
+  #home .hero .pet { position: absolute; z-index: 2; right: 14px; bottom: 4px; width: 180px; filter: drop-shadow(0 10px 10px rgba(0,0,0,.2)); cursor: pointer; }
+  #home .hero .say { position: absolute; z-index: 3; left: 18px; bottom: 70px; background: #fff; border: 1px solid var(--gold-line); padding: 10px 12px; border-radius: 14px 14px 4px 14px; font-size: 12.5px; max-width: 160px; box-shadow: 0 6px 14px rgba(0,0,0,.1); }
+  .pts { margin-top: -18px; position: relative; z-index: 3; border-radius: 18px; background: var(--g-red); color: #fff; padding: 14px 16px; display: flex; align-items: center; gap: 12px; box-shadow: inset 0 0 0 1.5px rgba(234,211,166,.7), 0 10px 22px rgba(142,15,20,.25); }
+  .pts small { font: 700 10px var(--f-caps); letter-spacing: .18em; opacity: .85; }
+  .pts b { display: block; font: 700 30px/1.1 var(--f-serif); }
+  .pts .tier { margin-left: auto; text-align: center; font-size: 11px; }
+  .pts .tier img { width: 46px; margin: 0 auto; }
+  .quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0 4px; }
+  .quick button { border: 1px solid var(--gold-line); background: var(--paper); border-radius: 14px; padding: 10px 2px; display: grid; justify-items: center; gap: 4px; font-size: 11.5px; }
+  .quick span { width: 38px; height: 38px; border-radius: 50%; background: var(--red); color: #fff; display: grid; place-items: center; font-size: 17px; box-shadow: inset 0 0 0 1.5px rgba(234,211,166,.8); }
+  .sec { display: flex; justify-content: space-between; align-items: flex-end; margin: 20px 2px 10px; }
+  .sec div b { display: block; font: 700 18px var(--f-serif); }
+  .sec .more { font-size: 12px; color: var(--red); font-weight: 700; cursor: pointer; }
+  .blesscard { border-radius: 18px; overflow: hidden; height: 150px; background: var(--g-navy); color: #fff; display: flex; border: 1px solid var(--gold-light); cursor: pointer; }
+  .blesscard video { width: 108px; height: 100%; object-fit: cover; }
+  .blesscard > div { padding: 14px; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+  .blesscard b { font: 700 18px var(--f-serif); }
+  .blesscard span { font-size: 12px; opacity: .85; }
+  .drawcard { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+  .drawcard { position: relative; overflow: hidden; background: linear-gradient(120deg, #fff 30%, var(--ice)) !important; padding: 14px 14px 14px 8px !important; min-height: 120px; }
+  .drawcard .ph { width: 96px; height: 116px; object-fit: contain; flex: 0 0 96px; margin: -6px 0 -10px; filter: drop-shadow(0 8px 10px rgba(20,48,107,.25)); }
+  .drawcard .dc { flex: 1; min-width: 0; }
+  .drawcard .dc b { display: block; font: 700 20px var(--f-serif); color: var(--glacier-navy); margin: 2px 0; }
+  .drawcard .dc span:last-child { font-size: 12px; color: var(--ink-soft); }
+  .drawcard .n { width: 62px; border-radius: 16px; background: var(--g-main); color: #fff; display: grid; place-items: center; padding: 8px 0 7px; flex: 0 0 62px; text-align: center; }
+  .drawcard .n b { font: 700 26px/1 var(--f-serif); }
+  .drawcard .n small { font-size: 10px; opacity: .85; }
+  .eps { display: flex; gap: 10px; overflow-x: auto; margin: 0 -18px; padding: 2px 18px 10px; scrollbar-width: none; }
+  .eps::-webkit-scrollbar { display: none; }
+  .ep { flex: 0 0 132px; cursor: pointer; }
+  .ep .im { height: 170px; border-radius: 14px; overflow: hidden; position: relative; background: var(--g-sky); border: 1px solid var(--gold-line); }
+  .ep .im img { width: 100%; height: 100%; object-fit: cover; }
+  .ep .im .ept { position: absolute; left: 8px; right: 8px; bottom: 8px; color: #fff; font: 700 12px/1.3 var(--f-serif); text-shadow: 0 2px 6px rgba(0,0,0,.6); }
+  .ep .im .ept small { display: block; font: 700 9px var(--f-caps); letter-spacing: .14em; color: var(--gold-light); }
+  .ep .lk { position: absolute; inset: 0; background: rgba(13,33,80,.6); display: grid; place-items: center; color: #fff; font-size: 12px; text-align: center; }
+  .ep b { display: block; font: 700 13px var(--f-serif); margin-top: 6px; }
+  .ep span { font-size: 11px; color: var(--ink-soft); }
+
+  /* 守护者 */
+  .gcar { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -18px; padding: 8px 18px 14px; scrollbar-width: none; }
+  .gcar::-webkit-scrollbar { display: none; }
+  .gc { flex: 0 0 88%; scroll-snap-align: center; border: 0; padding: 12px 12px 16px; border-radius: 22px; background: var(--g-navy); color: #fff; text-align: center; position: relative; box-shadow: inset 0 0 0 1.5px rgba(234,211,166,.55); transition: transform .3s var(--ease-out); }
+  .gc.on { transform: translateY(-4px); box-shadow: inset 0 0 0 2px var(--gold-light), 0 14px 28px rgba(20,48,107,.3); }
+  .gc .arch { background: url(assets/bg-landing.jpg) center 40%/cover; border-radius: 999px 999px 14px 14px; height: 440px; display: grid; place-items: end center; overflow: hidden; border: 1px solid rgba(234,211,166,.6); }
+  .gc .arch img { width: 90%; margin-bottom: -4px; filter: drop-shadow(0 8px 8px rgba(0,0,0,.25)); }
+  .gc .arch { position: relative; }
+  .gc .arch video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 96%; display: block; }
+  .gc b { display: block; font: 700 12px var(--f-caps); letter-spacing: .2em; margin-top: 12px; }
+  .gc em { display: block; font: 700 24px var(--f-serif); font-style: normal; }
+  .gc span { font-size: 12px; opacity: .8; }
+  .gc .seal { position: absolute; top: 18px; right: 18px; z-index: 2; }
+
+  #guardian .scene { position: relative; height: 360px; flex: 0 0 360px; background: url(assets/bg-landing.jpg) center 45%/cover; }
+  #guardian .scene::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0) 60%, var(--ivory)); }
+  #guardian .scene .top { position: absolute; top: 50px; left: 14px; right: 14px; z-index: 3; display: flex; gap: 10px; align-items: center; background: rgba(251,246,236,.92); border: 1px solid var(--gold-line); border-radius: 16px; padding: 8px 12px; }
+  #guardian .scene .top img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; object-position: top; background: var(--ice); }
+  #guardian .scene .top .nm { font: 700 14px var(--f-serif); }
+  #guardian .scene .top .xp { flex: 1; }
+  .xpbar { height: 8px; border-radius: 8px; background: #E6D8BE; overflow: hidden; margin-top: 4px; }
+  .xpbar i { display: block; height: 100%; background: linear-gradient(90deg, #E9B04F, var(--red)); border-radius: 8px; transition: width .6s var(--ease-out); }
+  #guardian .scene .pet { position: absolute; z-index: 2; left: 50%; bottom: 6px; transform: translateX(-50%); transition: width .5s var(--ease-out); filter: drop-shadow(0 12px 10px rgba(0,0,0,.25)); }
+  #guardian .scene { overflow: hidden; }
+  #guardian .scene::after { z-index: 2; pointer-events: none; }
+  #home .hero { overflow: hidden; }
+  #guardian .scene .petv { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 94%; z-index: 1; display: none; }
+  #guardian .scene.hasv .petv { display: block; }
+  #guardian .scene .petv.zoom, #home .hero .petv.zoom { transform: scale(1.4); transform-origin: center 88%; }
+  #guardian .scene .petv.zoom2, #home .hero .petv.zoom2 { transform: scale(1.18); transform-origin: center 88%; }
+  #guardian .scene.hasv .pet { display: none; }
+  #guardian .scene .petv.pulse { animation: pulse .6s var(--ease-out); }
+  @keyframes pulse { 40% { filter: brightness(1.12) saturate(1.1); } }
+  #guardian .scene .pet.yay { animation: yay .7s var(--ease-out); }
+  @keyframes yay { 30% { transform: translateX(-50%) translateY(-18px) scale(1.04); } 60% { transform: translateX(-50%) translateY(0) rotate(2deg); } }
+  #guardian .scene .bubble { position: absolute; z-index: 3; right: 16px; top: 120px; background: #fff; border: 1px solid var(--gold-line); padding: 8px 12px; border-radius: 14px 14px 4px 14px; font-size: 12.5px; font-weight: 700; }
+  .pop { position: absolute; z-index: 4; left: 50%; top: 45%; font: 700 20px var(--f-serif); color: var(--red); pointer-events: none; animation: popup 1s var(--ease-out) forwards; text-shadow: 0 2px 0 #fff; white-space: nowrap; }
+  @keyframes popup { from { opacity: 1; transform: translate(-50%, 0); } to { opacity: 0; transform: translate(-50%, -60px); } }
+  .meters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+  .meter { background: var(--paper); border: 1px solid var(--gold-line); border-radius: 14px; padding: 10px 12px; }
+  .meter .lbl { display: flex; justify-content: space-between; font-size: 12px; }
+  .meter .lbl b { font: 700 13px var(--f-serif); }
+  .meter .tr { height: 8px; border-radius: 8px; background: #E6D8BE; margin-top: 6px; overflow: hidden; }
+  .meter .tr i { display: block; height: 100%; border-radius: 8px; transition: width .6s var(--ease-out); }
+  .acts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+  .act { border: 1px solid var(--gold-line); background: var(--paper); border-radius: 16px; padding: 10px 2px 8px; display: grid; justify-items: center; gap: 3px; }
+  .act span { width: 44px; height: 44px; border-radius: 50%; background: var(--red); color: #fff; display: grid; place-items: center; font-size: 19px; box-shadow: inset 0 0 0 1.5px rgba(234,211,166,.8); }
+  .act b { font: 700 13px var(--f-serif); }
+  .act small { font: 600 8.5px var(--f-caps); letter-spacing: .14em; color: var(--ink-soft); }
+  .stages { display: flex; align-items: flex-end; justify-content: space-between; gap: 4px; background: var(--paper); border: 1px solid var(--gold-line); border-radius: 16px; padding: 12px 8px 10px; }
+  .stg { flex: 1; text-align: center; opacity: .4; }
+  .stg.on, .stg.done { opacity: 1; }
+  .stg img { margin: 0 auto 4px; width: auto; object-fit: contain; }
+  .stg:nth-child(1) img { height: 38px; } .stg:nth-child(2) img { height: 46px; } .stg:nth-child(3) img { height: 54px; } .stg:nth-child(4) img { height: 62px; }
+  .stg b { display: block; font: 700 9px var(--f-caps); letter-spacing: .12em; }
+  .stg span { font-size: 10px; color: var(--ink-soft); }
+  .stg.on b { color: var(--red); }
+
+  .lvup { text-align: center; background: radial-gradient(circle at 50% 30%, #FFF6DD, var(--paper) 70%); }
+  .lvup .big { font-size: 46px; }
+  .lvup .lv { width: 80px; height: 80px; margin: 0 auto; border-radius: 50%; background: var(--g-gold); display: grid; place-items: center; font: 700 24px var(--f-serif); color: var(--glacier-navy); box-shadow: 0 0 0 6px rgba(234,211,166,.4); }
+  .lvup img { height: 150px; width: auto; margin: 6px auto -8px; }
+  .stat { display: flex; justify-content: space-between; padding: 8px 4px; border-bottom: 1px dashed var(--gold-line); font-size: 14px; }
+  .stat b { color: var(--red); }
+
+  #journey .map { position: relative; flex: 1; overflow: hidden; }
+  #journey .mapin { position: absolute; inset: 0; background: url(assets/map-journey.jpg) center/cover; transform-origin: 0 0; transition: transform .7s var(--ease-out); --s: 1; }
+  #journey .pin { position: absolute; transform: translate(-50%, -50%) scale(calc(1 / var(--s))); transition: transform .7s var(--ease-out); border: 0; background: none; display: grid; justify-items: center; }
+  #journey .pin.sel span { box-shadow: 0 0 0 4px #fff, 0 0 0 9px rgba(234,211,166,.75), 0 6px 14px rgba(0,0,0,.3); animation: pinpulse 1.4s ease-in-out infinite; }
+  @keyframes pinpulse { 50% { transform: scale(1.12); } }
+  #journey.zoomed .pin:not(.sel) { opacity: .35; }
+  #journey .spotcard { position: absolute; left: 12px; right: 12px; bottom: 14px; z-index: 4; background: rgba(251,246,236,.97); border: 1px solid var(--gold-line); border-radius: 20px; padding: 14px 16px 14px; box-shadow: 0 14px 32px rgba(0,0,0,.28); transform: translateY(130%); transition: transform .45s var(--ease-out); }
+  #journey.zoomed .spotcard { transform: none; }
+  #journey.zoomed .panel { opacity: 0; pointer-events: none; }
+  #journey .spotcard .row { display: flex; gap: 8px; margin-top: 12px; }
+  #journey .spotcard .row .btn { flex: 1; }
+  #journey .spotcard .tag { display: inline-block; font: 700 11px var(--f-sans); padding: 2px 8px; border-radius: 99px; background: var(--ice); color: var(--tibet-blue); margin-left: 6px; vertical-align: 3px; }
+  #journey .spotcard .rw { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  #journey .spotcard .rw span { font-size: 12px; background: #fff; border: 1px solid var(--gold-line); border-radius: 99px; padding: 3px 9px; }
+  #journey .zoomout { position: absolute; right: 12px; top: 112px; z-index: 4; border: 0; border-radius: 99px; padding: 7px 12px; background: rgba(251,246,236,.95); font: 700 12px var(--f-sans); color: var(--glacier-navy); box-shadow: 0 4px 12px rgba(0,0,0,.2); display: none; }
+  #journey.zoomed .zoomout { display: block; }
+  #journey .pin span { width: 38px; height: 38px; border-radius: 50%; background: var(--red); color: #fff; display: grid; place-items: center; box-shadow: 0 0 0 4px rgba(255,255,255,.8), 0 6px 14px rgba(0,0,0,.3); font-size: 16px; }
+  #journey .pin.lock span { background: #8A8F9F; }
+  #journey .pin.done span { background: var(--g-gold); color: var(--glacier-navy); }
+  #journey .pin em { margin-top: 6px; font: 700 11px var(--f-serif); background: rgba(251,246,236,.95); border: 1px solid var(--gold-line); padding: 3px 8px; border-radius: 99px; white-space: nowrap; }
+  #journey .me { position: absolute; height: 70px; width: auto; transform: translate(-50%, -92%) scale(calc(1 / var(--s))); transform-origin: 50% 92%; filter: drop-shadow(0 6px 6px rgba(0,0,0,.3)); transition: left .9s var(--ease-out), top .9s var(--ease-out), transform .7s var(--ease-out); z-index: 2; }
+  #journey .panel { position: absolute; left: 12px; right: 12px; bottom: 14px; z-index: 3; }
+
+  .memory { background: #fff; padding: 10px 10px 14px; border-radius: 6px; box-shadow: 0 10px 24px rgba(0,0,0,.15); transform: rotate(-2deg); border: 1px solid #eee; margin-top: 8px; }
+  .memory .ph { height: 240px; background: url(assets/map-journey.jpg) center 62%/cover; position: relative; border-radius: 3px; overflow: hidden; }
+  .memory .ph img { position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); height: 160px; width: auto; }
+  .memory b { display: block; text-align: center; font: 400 24px var(--f-brush); margin-top: 8px; }
+  .memory span { display: block; text-align: center; font-size: 11px; color: var(--ink-soft); }
+  .collect { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px; }
+  .collect div { background: var(--paper); border: 1px solid var(--gold-line); border-radius: 14px; padding: 10px 4px; text-align: center; font-size: 11.5px; }
+  .collect div span { display: block; font-size: 24px; }
+  .collect div.lock { opacity: .45; }
+
+  /* 任务 · 礼赠 */
+  .tiercard { border-radius: 18px; padding: 14px; background: var(--g-navy); color: #fff; display: flex; gap: 12px; align-items: center; box-shadow: inset 0 0 0 1.5px rgba(234,211,166,.5); }
+  .tiercard img { width: 70px; }
+  .tiercard b { font: 700 18px var(--f-serif); display: block; }
+  .tiercard small { font: 700 10px var(--f-caps); letter-spacing: .18em; color: var(--gold-light); }
+  .tiercard .xpbar { background: rgba(255,255,255,.18); }
+  .ckin { background: #fff; border: 1px solid var(--gold-line); border-radius: 18px; padding: 12px 14px; margin-top: 12px; }
+  .ckin .top { display: flex; align-items: center; gap: 10px; }
+  .ckin .top img { width: 40px; }
+  .ckin .top b { font: 700 15px var(--f-serif); display: block; }
+  .ckin .top span { font-size: 12px; color: var(--ink-soft); }
+  .ckin .top button { margin-left: auto; height: 34px; padding: 0 16px; border-radius: 99px; border: 0; background: var(--g-main); color: #fff; font-weight: 700; font-size: 13px; }
+  .ckin .top button:disabled { background: #E6D8BE; color: var(--ink-soft); }
+  .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
+  .days div { border-radius: 10px; background: var(--ice); text-align: center; padding: 6px 0 5px; font-size: 10px; color: var(--ink-soft); }
+  .days div b { display: block; font-size: 12px; color: var(--glacier-navy); }
+  .days div.on { background: var(--g-main); color: rgba(255,255,255,.8); }
+  .days div.on b { color: #fff; }
+  .days div.big { background: linear-gradient(135deg, #FFF3D6, #EAD3A6); }
+  .days div.big.on { background: var(--g-gold); }
+  .misgrp { display: flex; align-items: baseline; justify-content: space-between; margin: 18px 2px 6px; }
+  .misgrp b { font: 700 16px var(--f-serif); }
+  .misgrp span { font-size: 11px; color: var(--ink-soft); }
+  .mis .ic img { width: 38px; height: 38px; object-fit: contain; }
+  .mis .ic { background: linear-gradient(160deg, #fff, var(--ice)) !important; }
+  .mis .pg { display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 11px; color: var(--ink-soft); }
+  .mis .pg i { flex: 1; max-width: 110px; height: 5px; border-radius: 9px; background: var(--ice); overflow: hidden; }
+  .mis .pg i::after { content: ""; display: block; height: 100%; width: var(--w); background: var(--g-main); border-radius: 9px; }
+  .mis button.claim { background: var(--g-gold) !important; color: var(--glacier-navy); animation: pinpulse 1.4s ease-in-out infinite; }
+  .mis .rw { display: inline-flex; gap: 4px; flex-wrap: wrap; margin-top: 3px; }
+  .mis .rw em { font-style: normal; font-size: 11px; font-weight: 700; color: var(--tibet-blue); background: var(--ice); border-radius: 99px; padding: 1px 7px; }
+  .mis .rw em.r { color: var(--lucky-red); background: #FBE9E7; }
+  .scanbox { position: relative; margin: 10px auto 0; width: 240px; height: 240px; border-radius: 26px; background: url(assets/rw-bottle.png) center/62% no-repeat, radial-gradient(circle at 50% 40%, #2F63B0, #0D2150); overflow: hidden; }
+  .scanbox::before { content: ""; position: absolute; inset: 22px; border: 3px solid rgba(255,255,255,.9); border-radius: 18px; clip-path: polygon(0 0,28% 0,28% 4%,4% 4%,4% 28%,0 28%,0 72%,4% 72%,4% 96%,28% 96%,28% 100%,72% 100%,72% 96%,96% 96%,96% 72%,100% 72%,100% 28%,96% 28%,96% 4%,72% 4%,72% 0,100% 0,100% 100%,0 100%); }
+  .scanbox i { position: absolute; left: 26px; right: 26px; height: 2px; background: #8FE3FF; box-shadow: 0 0 12px #8FE3FF; animation: scanl 2s ease-in-out infinite; }
+  @keyframes scanl { 0%,100% { top: 30px; } 50% { top: 205px; } }
+  .scanok { text-align: center; }
+  .scanok .gain { display: flex; gap: 10px; justify-content: center; margin: 14px 0; }
+  .scanok .gain div { background: #fff; border: 1px solid var(--gold-line); border-radius: 16px; padding: 10px 14px; min-width: 110px; }
+  .scanok .gain img { width: 46px; display: block; margin: 0 auto 4px; }
+  .scanok .gain b { font: 700 18px var(--f-serif); color: var(--tibet-blue); display: block; }
+  .invcode { display: flex; align-items: center; justify-content: space-between; background: var(--ice); border-radius: 14px; padding: 10px 14px; margin: 12px 0; font: 700 20px var(--f-serif); letter-spacing: .12em; color: var(--glacier-navy); }
+  .invcode button { border: 0; background: #fff; border-radius: 99px; padding: 6px 12px; font: 700 12px var(--f-sans); color: var(--tibet-blue); letter-spacing: 0; }
+  .mis:last-child { border: 0; }
+  .mis { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px dashed var(--gold-line); }
+  .mis:last-child { border: 0; }
+  .mis .ic { width: 44px; height: 44px; border-radius: 12px; background: #fff; border: 1px solid var(--gold-line); display: grid; place-items: center; font-size: 20px; flex: 0 0 44px; }
+  .mis b { display: block; font: 700 14px var(--f-serif); }
+  .mis span { font-size: 12px; color: var(--red); font-weight: 700; }
+  .mis small { display: block; font-size: 11px; color: var(--ink-soft); }
+  .mis button { margin-left: auto; height: 32px; min-width: 58px; padding: 0 12px; border-radius: 99px; border: 0; background: var(--g-red); color: #fff; font-weight: 700; font-size: 12px; box-shadow: inset 0 0 0 1px rgba(234,211,166,.7); }
+  .mis button.done { background: #E6D8BE; color: var(--ink-soft); box-shadow: none; }
+  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .tiers div { text-align: center; background: var(--paper); border: 1px solid var(--gold-line); border-radius: 14px; padding: 10px 4px; font-size: 11px; color: var(--ink-soft); }
+  .tiers div.on { border: 2px solid var(--red); background: #fff; }
+  .tiers img { width: 56px; margin: 0 auto 4px; }
+  .tiers b { display: block; font: 700 13px var(--f-serif); color: var(--glacier-navy); }
+  .rw { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .mvlist { display: grid; gap: 10px; }
+  .mv { display: flex; align-items: stretch; background: #fff; border: 1px solid var(--gold-line); border-radius: 16px; overflow: hidden; box-shadow: 0 6px 16px rgba(20,48,107,.06); cursor: pointer; }
+  .mv .brand { flex: 0 0 96px; display: grid; place-items: center; text-align: center; color: #fff; padding: 10px 6px; font: 700 13px/1.15 var(--f-serif); letter-spacing: .02em; position: relative; }
+  .mv .brand img { width: 46px; height: 46px; object-fit: contain; display: block; margin: 0 auto 4px; filter: drop-shadow(0 4px 6px rgba(0,0,0,.25)); }
+  .mv .brand.logo { padding: 8px; border-right: 1px solid #EFE6D3; }
+  .mv .brand.logo img { width: 100%; height: auto; max-height: 64px; object-fit: contain; margin: 0; filter: none; border-radius: 6px; }
+  .mv .brand.logo.dark img { width: 74%; }
+  .mv .brand.logo::after { background: radial-gradient(circle at 7px 7px, var(--paper) 5px, transparent 5.5px) 0 0/14px 14px repeat-y; }
+  .mv .brand small { display: block; font: 600 8.5px var(--f-caps); letter-spacing: .14em; opacity: .8; margin-top: 4px; }
+  .mv .brand::after { content: ""; position: absolute; right: -7px; top: 0; bottom: 0; width: 14px; background: radial-gradient(circle at 7px 7px, #fff 5px, transparent 5.5px) 0 0/14px 14px repeat-y; }
+  .mv .info { flex: 1; padding: 10px 12px 10px 16px; min-width: 0; }
+  .mv .info b { display: block; font: 700 18px var(--f-serif); color: var(--glacier-navy); }
+  .mv .info span { display: block; font-size: 11.5px; color: var(--ink-soft); }
+  .mv .info em { font-style: normal; font-weight: 700; font-size: 12px; color: var(--tibet-blue); }
+  .mv .mact { flex: 0 0 auto; display: grid; place-items: center; padding: 0 12px 0 0; }
+  .mv .mact button { height: 32px; padding: 0 14px; border-radius: 99px; border: 0; background: var(--g-main); color: #fff; font-weight: 700; font-size: 12px; white-space: nowrap; }
+  .mv .mact button[disabled] { background: #E6D8BE; color: var(--ink-soft); }
+  .mvnote { font-size: 11px; color: var(--ink-soft); margin: 8px 2px 0; }
+  .vcard .vtop .vb { flex: 0 0 66px; height: 66px; border-radius: 14px; display: grid; place-items: center; color: #fff; font: 700 11px/1.1 var(--f-serif); text-align: center; padding: 4px; margin-left: auto; }
+  .vcard .vtop .vb img { width: 34px; height: 34px; object-fit: contain; display: block; margin: 0 auto 1px; }
+  .vcard .vtop .vb span { font: 700 8.5px/1.05 var(--f-sans); display: block; color: #fff !important; }
+  .vcard .vtop .vb.lg { padding: 6px; border: 1px solid #EFE6D3; }
+  .vcard .vtop .vb.lg img { width: 100%; height: 100%; object-fit: contain; margin: 0; }
+  .vcard .tagr { display: inline-block; font: 700 10px var(--f-sans); color: #fff; background: var(--lucky-red); border-radius: 99px; padding: 1px 7px; margin-left: 6px; vertical-align: 2px; }
+  .wish.custom { flex-wrap: wrap; align-items: flex-start; cursor: text; }
+  .wish.custom > div { flex: 1; min-width: 0; }
+  .wish.custom textarea { display: none; width: 100%; margin-top: 8px; border: 1px solid var(--gold-line); border-radius: 12px; padding: 10px 12px; font: 15px/1.5 var(--f-serif); color: var(--glacier-navy); resize: none; height: 74px; background: var(--snow); outline: none; }
+  .wish.custom.on textarea { display: block; }
+  .wish.custom .cnt { display: none; justify-content: space-between; font: 12px var(--f-sans); color: var(--ink-soft); margin-top: 4px; }
+  .wish.custom.on .cnt { display: flex; }
+  .wish.custom .cnt b.over { color: var(--lucky-red); }
+  .video .subt { position: absolute; left: 10px; right: 10px; bottom: 16px; text-align: center; z-index: 2; pointer-events: none; }
+  .video .subt span { display: inline; background: rgba(13,33,80,.72); color: #fff; font: 700 16px/1.7 var(--f-serif); padding: 3px 8px; border-radius: 6px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  .mywish { margin-top: 12px; background: #fff; border: 1px solid var(--gold-line); border-radius: 14px; padding: 10px 14px; font-size: 13px; }
+  .mywish b { font: 700 15px var(--f-serif); color: var(--glacier-navy); }
+  .gdrop.g-rare .tk { width: 74px; text-align: center; animation: pinpulse .8s ease-in-out infinite; }
+  .gdrop.g-rare .tk img { width: 74px; height: 74px; object-fit: contain; display: block; filter: drop-shadow(0 0 12px rgba(255,214,107,.95)); }
+  .gdrop.g-rare .tk span { display: inline-block; margin-top: -6px; font: 800 9px var(--f-sans); color: #5B3A0A; background: #FFE3A0; border-radius: 99px; padding: 1px 6px; white-space: nowrap; }
+  .grare { display: none; background: linear-gradient(135deg, #FFF3C4, #E9C46A); color: #5B3A0A; border-radius: 14px; padding: 10px 12px; font-size: 13px; font-weight: 700; margin: 0 0 10px; }
+  .grare.on { display: block; }
+  .rwi { background: var(--paper); border: 1px solid var(--gold-line); border-radius: 16px; padding: 10px; text-align: center; }
+  .rwi .im { height: 110px; display: grid; place-items: center; background: radial-gradient(circle, #fff, #F3E9D6); border-radius: 12px; }
+  .rwi .im img { max-height: 96px; width: auto; }
+  .rwi b { display: block; font: 700 13.5px var(--f-serif); margin-top: 8px; }
+  .rwi span { font-size: 12px; color: var(--red); font-weight: 700; }
+  .rwi button { margin-top: 8px; width: 100%; height: 32px; border-radius: 99px; border: 0; background: var(--glacier-navy); color: #fff; font-size: 12px; font-weight: 700; }
+  .rwi button[disabled] { background: #E6D8BE; color: var(--ink-soft); cursor: default; }
+
+  /* 抽奖 · 内容 · 品牌 */
+  #draw .dhero { position: relative; flex: 0 0 auto; height: 300px; color: #fff; background: url(assets/kv-draw.jpg) center 40%/cover, var(--g-navy); }
+  #draw .dhero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(13,33,80,.35) 0%, rgba(13,33,80,0) 35%, rgba(13,33,80,0) 45%, rgba(13,33,80,.92) 100%); }
+  #draw .dhero .txt { position: absolute; left: 18px; right: 18px; bottom: 16px; z-index: 1; }
+  #draw .dhero .caps { color: var(--gold-light) !important; }
+  #draw .dhero h1 { font: 700 28px var(--f-serif); margin: 2px 0 2px; text-shadow: 0 2px 10px rgba(0,0,0,.35); }
+  #draw .dhero .meta { font-size: 13px; opacity: .9; }
+  #draw .dhero .rules { position: absolute; right: 14px; top: 56px; z-index: 2; border: 0; border-radius: 99px; padding: 6px 12px; background: rgba(255,255,255,.92); font: 700 12px var(--f-sans); color: var(--glacier-navy); }
+  .tkcard { background: #fff; border: 1px solid var(--gold-line); border-radius: 20px; padding: 14px 16px; margin-top: 14px; position: relative; z-index: 2; box-shadow: 0 10px 24px rgba(20,48,107,.12); }
+  .tkcard .t1 { display: flex; align-items: baseline; justify-content: space-between; }
+  .tkcard .t1 small { font: 700 10px var(--f-caps); letter-spacing: .18em; color: var(--tibet-blue); }
+  .tkcard .t1 b { font: 700 30px var(--f-serif); color: var(--glacier-navy); }
+  .tkcard .t1 b i { font-style: normal; font-size: 15px; color: var(--ink-soft); }
+  .tix { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 10px; }
+  .tix div { height: 42px; border-radius: 10px; border: 1.5px dashed var(--gold-line); display: grid; place-items: center; font-size: 11px; color: var(--ink-soft); position: relative; }
+  .tix div.on { border: 0; background: var(--g-main); color: #fff; font-weight: 700; }
+  .tix div.on::before, .tix div.on::after { content: ""; position: absolute; top: 50%; width: 10px; height: 10px; border-radius: 50%; background: #fff; transform: translateY(-50%); }
+  .tix div.on::before { left: -5px; } .tix div.on::after { right: -5px; }
+  .tkcard p { margin: 10px 0 0; font-size: 12px; color: var(--ink-soft); }
+  .led .ic img { width: 34px; height: 34px; object-fit: contain; }
+  .led .ic { background: linear-gradient(160deg, #fff, var(--ice)) !important; width: 46px !important; height: 46px !important; flex: 0 0 46px; }
+  .led.todo em { white-space: nowrap; flex: 0 0 auto; background: var(--g-main); color: #fff !important; border-radius: 99px; padding: 7px 12px; font-size: 12px; }
+  .led:not(.todo) em::before { content: "✓ 已获得 "; font-size: 11px; font-weight: 700; }
+  .tline { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; position: relative; margin-top: 6px; }
+  .tline::before { content: ""; position: absolute; left: 16%; right: 16%; top: 7px; height: 2px; background: var(--gold-line); }
+  .tline div { position: relative; font-size: 11px; color: var(--ink-soft); }
+  .tline div::before { content: ""; display: block; width: 14px; height: 14px; border-radius: 50%; margin: 0 auto 6px; background: #fff; border: 2px solid var(--gold-line); }
+  .tline div.on::before { background: var(--tibet-blue); border-color: var(--tibet-blue); box-shadow: 0 0 0 4px var(--ice); }
+  .tline b { display: block; font: 700 13px var(--f-serif); color: var(--glacier-navy); }
+  .prize { display: flex; gap: 12px; align-items: center; background: #fff; border: 1px solid var(--gold-line); border-radius: 18px; padding: 12px 14px; }
+  .prize img { width: 54px; }
+  .prize b { font: 700 15px var(--f-serif); display: block; }
+  .prize span { font-size: 12px; color: var(--ink-soft); }
+  .led { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px dashed var(--gold-line); }
+  .led .ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font-size: 18px; background: #fff; border: 1px solid var(--gold-line); }
+  .led b { display: block; font: 700 14px var(--f-serif); }
+  .led span { font-size: 12px; color: var(--ink-soft); }
+  .led em { margin-left: auto; font-style: normal; font-weight: 900; color: var(--red); }
+  .led.todo em { color: var(--tibet-blue); font-size: 12px; cursor: pointer; }
+  .ep-hero { border-radius: 20px; overflow: hidden; position: relative; height: 220px; border: 1px solid var(--gold-light); cursor: pointer; }
+  .ep-hero .pl { position: absolute; top: 40%; left: 50%; transform: translate(-50%,-50%); width: 54px; height: 54px; border-radius: 50%; background: rgba(255,255,255,.9); display: grid; place-items: center; z-index: 2; }
+  .ep-hero img { width: 100%; height: 100%; object-fit: cover; }
+  .ep-hero .cap { position: absolute; inset: auto 0 0 0; padding: 50px 16px 14px; background: linear-gradient(180deg, transparent, rgba(13,33,80,.9)); color: #fff; }
+  .ep-hero .cap b { display: block; font: 700 19px var(--f-serif); }
+  .ep-hero .cap span { font-size: 12px; opacity: .85; }
+  .song { display: flex; align-items: center; gap: 12px; background: var(--paper); border: 1px solid var(--gold-line); border-radius: 16px; padding: 10px; margin-bottom: 8px; }
+  .song img { width: 52px; height: 52px; border-radius: 12px; object-fit: cover; }
+  .song b { display: block; font: 700 14px var(--f-serif); }
+  .song span { font-size: 12px; color: var(--ink-soft); }
+  .song button { margin-left: auto; width: 38px; height: 38px; border-radius: 50%; border: 0; background: var(--g-red); color: #fff; }
+  .chapters { display: flex; gap: 10px; overflow-x: auto; margin: 0 -18px; padding: 2px 18px 12px; scrollbar-width: none; }
+  .chapters::-webkit-scrollbar { display: none; }
+  .chap { flex: 0 0 148px; background: var(--paper); border: 1px solid var(--gold-line); border-radius: 14px; overflow: hidden; padding-bottom: 10px; }
+  .chap img { width: 100%; height: 88px; object-fit: cover; }
+  .chap em { display: block; font: italic 600 20px var(--f-latin); color: var(--red); padding: 4px 12px 0; }
+  .chap b { display: block; font: 700 14px var(--f-serif); padding: 0 12px; }
+  .chap span { display: block; font-size: 11px; color: var(--ink-soft); padding: 2px 12px 0; line-height: 1.5; }
+  .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .facts div { background: var(--paper); border: 1px solid var(--gold-line); border-radius: 14px; padding: 12px; font-size: 12px; color: var(--ink-soft); line-height: 1.6; }
+  .facts b { display: block; color: var(--glacier-navy); font: 700 14px var(--f-serif); }
+
+  /* 养成页：整页视频 */
+  #guardian .scene { position: absolute; inset: 0; height: auto; flex: none; overflow: hidden; background: url(assets/bg-landing.jpg) center/cover; }
+  #guardian .scene::after { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: linear-gradient(180deg, rgba(20,48,107,.18) 0%, rgba(255,255,255,0) 22%, rgba(255,255,255,0) 62%, rgba(246,238,223,.85) 100%); }
+  #guardian .scene .petv { top: 0; height: 100%; object-position: center 45%; }
+  #guardian .scene .petv.zoom { transform: translateY(-24%) scale(1.7); transform-origin: center 84%; }
+  #guardian .scene .petv.zoom2 { transform: translateY(-20%) scale(1.42); transform-origin: center 82%; }
+  #guardian .scene .petv.zoom3 { transform: translateY(-14%) scale(1.15); transform-origin: center 80%; }
+  #guardian .scene .top { top: 48px; padding: 8px 12px 10px; align-items: flex-start; }
+  #guardian .scene .top .xpn { float: right; font: 400 11px var(--f-sans); color: var(--ink-soft); margin-top: 3px; }
+  #guardian .scene .top .mini { display: grid; grid-template-columns: auto 1fr auto auto 1fr auto; gap: 4px 6px; align-items: center; margin-top: 7px; font-size: 11px; }
+  #guardian .scene .top .mini span { color: var(--ink-soft); }
+  #guardian .scene .top .mini em { font-style: normal; font-weight: 700; font-size: 11px; }
+  #guardian .scene .top .mini .tr { height: 6px; border-radius: 6px; background: #E6D8BE; overflow: hidden; }
+  #guardian .scene .top .mini .tr i { display: block; height: 100%; border-radius: 6px; transition: width .6s var(--ease-out); }
+  #guardian .scene .bubble { top: 156px; right: 70px; }
+  #guardian .gside { position: absolute; right: 12px; top: 150px; z-index: 3; display: grid; gap: 10px; }
+  #guardian .gside button { width: 50px; border: 0; border-radius: 16px; padding: 6px 0 5px; background: rgba(251,246,236,.88); backdrop-filter: blur(8px); box-shadow: 0 6px 16px rgba(0,0,0,.15); font-size: 10.5px; font-weight: 700; display: grid; justify-items: center; gap: 1px; }
+  #guardian .gside button span { font-size: 19px; }
+  #guardian .gpanel { position: absolute; left: 12px; right: 12px; bottom: 88px; z-index: 4; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px; border-radius: 24px; background: rgba(251,246,236,.82); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,.7); box-shadow: 0 10px 26px rgba(20,48,107,.18); }
+  #guardian .gpanel .act { border: 0; background: none; padding: 2px; }
+  #guardian .gpanel .act span { width: 50px; height: 50px; font-size: 21px; }
+  #guardian .gpanel .act b { font-size: 12.5px; }
+  #guardian .tabs { margin-top: auto; }
+  #guardian .pop { top: 38%; font-size: 24px; }
+
+  /* ===== H · 玩法指南 ===== */
+  .gtabs { display: flex; gap: 6px; overflow-x: auto; padding: 0 18px 10px; scrollbar-width: none; flex: 0 0 auto; }
+  .gtabs::-webkit-scrollbar { display: none; }
+  .gtabs button { flex: 0 0 auto; height: 32px; padding: 0 12px; border-radius: 99px; border: 1px solid var(--gold-line); background: var(--paper); font-size: 12.5px; font-weight: 700; }
+  .gtabs button.on { background: var(--red); color: #fff; border-color: var(--red); }
+  .loopgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+  .loopgrid div { background: var(--paper); border: 1px solid var(--gold-line); border-radius: 16px; padding: 12px; position: relative; }
+  .loopgrid span { font-size: 22px; } .loopgrid b { display: block; font: 700 15px var(--f-serif); margin-top: 2px; }
+  .loopgrid small { font-size: 11.5px; color: var(--ink-soft); line-height: 1.5; }
+  .note { background: #FFF7E6; border: 1px solid #F0D9A8; border-radius: 14px; padding: 10px 12px; font-size: 12.5px; line-height: 1.7; margin: 10px 0; }
+  .note.red { background: #FDEEEE; border-color: #F2C2C4; }
+  .steps6 { counter-reset: st; list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 8px; }
+  .steps6 li { counter-increment: st; display: grid; grid-template-columns: 30px 1fr; gap: 0 10px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; }
+  .steps6 li::before { content: counter(st); grid-row: span 2; width: 28px; height: 28px; border-radius: 50%; background: var(--g-red); color: #fff; display: grid; place-items: center; font: 700 14px var(--f-serif); }
+  .steps6 li b { color: var(--glacier-navy); font: 700 14px var(--f-serif); }
+  .gsec { margin-top: 26px; padding-top: 18px; border-top: 1px dashed var(--gold-line); }
+  .gsec .btn { margin-top: 10px; }
+  .rtable { display: grid; gap: 6px; margin-top: 8px; }
+  .rtable > div { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; background: var(--paper); border: 1px solid var(--gold-line); border-radius: 14px; padding: 9px 12px; }
+  .rtable > div.hl { border: 2px solid var(--red); background: #fff; }
+  .rtable span { font-size: 22px; text-align: center; }
+  .rtable p { margin: 0; } .rtable p b { display: block; font: 700 13.5px var(--f-serif); }
+  .rtable p small { font-size: 11px; color: var(--ink-soft); }
+  .rtable em { font-style: normal; font: 700 14px var(--f-serif); color: var(--red); white-space: nowrap; }
+  .evo { display: flex; align-items: flex-end; justify-content: space-between; margin: 12px 0 4px; background: var(--paper); border: 1px solid var(--gold-line); border-radius: 16px; padding: 10px 6px; }
+  .evo div { text-align: center; font-size: 11px; color: var(--ink-soft); flex: 1; }
+  .evo img { height: 54px; width: auto; margin: 0 auto 2px; } .evo div:nth-child(1) img { height: 40px; } .evo div:nth-child(7) img { height: 64px; }
+  .evo b { display: block; color: var(--red); font-size: 12px; } .evo i { font-style: normal; color: var(--gold); padding-bottom: 26px; }
+  .gamecard { display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: center; background: var(--g-navy); color: #fff; border-radius: 18px; padding: 12px; margin-top: 8px; }
+  .gamecard ul { margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.7; }
+  .gc-art { position: relative; height: 130px; border-radius: 12px; background: url(assets/bg-landing.jpg) center 70%/cover; overflow: hidden; }
+  .gc-art img { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); height: 62px; width: auto; }
+  .gc-art span { position: absolute; font-size: 16px; animation: drop 2.4s linear infinite; }
+  .gc-art .d1 { left: 15%; } .gc-art .d2 { left: 45%; animation-delay: .8s; } .gc-art .d3 { left: 70%; animation-delay: 1.5s; } .gc-art .d4 { left: 30%; animation-delay: 2s; }
+  @keyframes drop { from { top: -20px; } to { top: 120px; } }
+  .vsteps { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .vsteps div { background: var(--paper); border: 1px solid var(--gold-line); border-radius: 14px; padding: 10px; font-size: 12.5px; display: flex; gap: 8px; align-items: center; }
+  .vsteps b { width: 24px; height: 24px; flex: 0 0 24px; border-radius: 50%; background: var(--glacier-navy); color: #fff; display: grid; place-items: center; font-size: 12px; }
+  /* 小游戏 */
+  #game { background: #0D2150; }
+  .garena { position: absolute; inset: 0; background: url(assets/bg-landing.jpg) center 60%/cover; overflow: hidden; touch-action: none; }
+  .garena::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(13,33,80,.45), rgba(13,33,80,0) 26%, rgba(13,33,80,0) 70%, rgba(13,33,80,.35)); pointer-events: none; }
+  .ghud { position: absolute; top: 50px; left: 12px; right: 12px; z-index: 5; display: flex; gap: 8px; align-items: center; }
+  .ghud .ib { flex: 0 0 38px; }
+  .ghud .sc { flex: 1; display: flex; align-items: center; gap: 8px; background: rgba(13,33,80,.55); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,.25); border-radius: 99px; padding: 4px 14px 4px 6px; color: #fff; }
+  .ghud .sc svg { flex: 0 0 26px; }
+  .ghud .sc b { font: 700 22px var(--f-serif); }
+  .ghud .sc small { margin-left: auto; font-size: 11px; opacity: .85; }
+  .ghud .tm { flex: 0 0 auto; background: rgba(13,33,80,.55); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,.25); border-radius: 99px; padding: 6px 12px; color: #fff; font: 700 15px var(--f-serif); }
+  .gbar { position: absolute; top: 96px; left: 62px; right: 12px; height: 6px; border-radius: 9px; background: rgba(255,255,255,.3); z-index: 5; overflow: hidden; }
+  .gbar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #8FE3FF, #fff); border-radius: 9px; transition: width 1s linear; }
+  .gbar i.low { background: linear-gradient(90deg, #FF8A80, #FFD3CF); }
+  .gcombo { position: absolute; top: 112px; left: 50%; transform: translateX(-50%); z-index: 5; font: 700 15px var(--f-serif); color: #fff; background: var(--g-gold); color: var(--glacier-navy); padding: 4px 14px; border-radius: 99px; box-shadow: 0 4px 14px rgba(0,0,0,.25); opacity: 0; transition: opacity .2s; }
+  .gcombo.on { opacity: 1; animation: pinpulse .5s; }
+  .gpet { position: absolute; bottom: 64px; left: 50%; height: 150px; width: auto; transform: translateX(-50%); z-index: 3; filter: drop-shadow(0 10px 10px rgba(0,0,0,.35)); pointer-events: none; }
+  .gpet.hit { animation: ghit .3s; } .gpet.bad { animation: gbad .4s; }
+  @keyframes ghit { 50% { transform: translateX(-50%) scale(1.08, .94); } }
+  @keyframes gbad { 25% { transform: translateX(-56%); filter: grayscale(.6) drop-shadow(0 10px 10px rgba(0,0,0,.35)); } 75% { transform: translateX(-44%); } }
+  .gring { position: absolute; bottom: 50px; left: 50%; width: 130px; height: 30px; border-radius: 50%; transform: translateX(-50%); z-index: 2; background: radial-gradient(closest-side, rgba(143,227,255,.75), rgba(143,227,255,0)); pointer-events: none; }
+  .gdrop img, .gdrop svg { display: block; }
+  .gdrop.g-bottle img { height: 54px; filter: drop-shadow(0 0 10px rgba(255,220,140,.9)); }
+  .gsplash { position: absolute; z-index: 4; width: 20px; height: 20px; border-radius: 50%; border: 3px solid #8FE3FF; transform: translate(-50%, -50%); animation: gsp .45s ease-out forwards; pointer-events: none; }
+  @keyframes gsp { to { width: 90px; height: 90px; opacity: 0; } }
+  .glegend { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 6px 0 14px; }
+  .glegend div { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); border-radius: 14px; padding: 10px 4px 8px; font-size: 12px; display: grid; justify-items: center; gap: 4px; }
+  .glegend b { font: 700 15px var(--f-serif); color: var(--gold-light); }
+  .glegend img { height: 40px; }
+  .gstart .gp { height: 120px; width: auto; margin: 0 auto 4px; filter: drop-shadow(0 8px 10px rgba(0,0,0,.3)); }
+  .gstars { font-size: 30px; letter-spacing: 4px; color: rgba(255,255,255,.25); }
+  .gstars i { font-style: normal; color: #FFD66B; text-shadow: 0 0 12px rgba(255,214,107,.7); }
+  .gdrop { position: absolute; top: -60px; z-index: 2; pointer-events: none; }
+  .gfx { position: absolute; z-index: 6; font: 700 20px var(--f-serif); color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,.5); pointer-events: none; animation: popup .8s var(--ease-out) forwards; }
+  .gstart { position: absolute; inset: 0; z-index: 8; background: rgba(13,33,80,.72); backdrop-filter: blur(3px); display: flex; flex-direction: column; justify-content: center; padding: 30px; text-align: center; color: #fff; gap: 10px; }
+  .gstart[hidden] { display: none; }
+  .gstart p { opacity: .85; margin: 0 0 10px; }
+  .greward { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 6px 0 12px; }
+  .greward div { background: rgba(255,255,255,.1); border: 1px solid rgba(234,211,166,.4); border-radius: 14px; padding: 12px; font-size: 12px; }
+  .greward b { display: block; font: 700 26px var(--f-serif); color: var(--gold-light); }
+  /* 券包 */
+  .vcard { background: #fff; border-radius: 18px; border: 1px solid var(--gold-line); overflow: hidden; margin-bottom: 12px; box-shadow: 0 8px 20px rgba(90,60,20,.08); }
+  .vtop { display: flex; gap: 10px; align-items: center; padding: 14px; background: linear-gradient(135deg, #FBF6EC, #F3E4C4); }
+  .vtop small { display: block; font: 700 9.5px var(--f-caps); letter-spacing: .12em; color: var(--red); }
+  .vtop b { display: block; font: 700 18px var(--f-serif); } .vtop span { font-size: 11.5px; color: var(--ink-soft); }
+  .vtop img { width: 76px; margin-left: auto; }
+  .vtop .chip { margin-left: auto; flex: 0 0 auto; }
+  .vcode { padding: 16px; text-align: center; border-top: 2px dashed var(--gold-line); }
+  .barcode { height: 70px; margin: 0 auto 8px; width: 88%; background: repeating-linear-gradient(90deg, #111 0 2px, #fff 2px 4px, #111 4px 7px, #fff 7px 8px, #111 8px 9px, #fff 9px 12px); }
+  .vcode b { display: block; font: 700 16px var(--f-sans); letter-spacing: .1em; } .vcode small { font-size: 11px; color: var(--ink-soft); }
+
+  /* 首页：六位守护者一起出现，自己的在中间 */
+  #home .hero .hcast { position: absolute; left: 0; right: 0; bottom: 34px; height: 280px; z-index: 2; cursor: pointer; }
+  #home .hero .hcast img { position: absolute; bottom: 0; filter: drop-shadow(0 8px 8px rgba(40,30,20,.25)); animation: sway 3.2s ease-in-out infinite; transform-origin: bottom center; }
+  #home .hero .hcast img.me { z-index: 3; animation: bob 2.2s ease-in-out infinite; }
+  #home .hero .hcast .metag { position: absolute; z-index: 4; left: 50%; transform: translateX(-50%); bottom: -14px; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 99px; white-space: nowrap; box-shadow: 0 4px 10px rgba(142,15,20,.3); }
+  @keyframes sway { 50% { transform: rotate(-2deg) translateY(-3px); } }
+  #home .hero .say { bottom: auto !important; top: 122px; left: auto !important; right: 16px; border-radius: 14px 14px 14px 4px; }
+
+  #guardian .gpanel { grid-template-columns: repeat(4, 1fr); }
+  #guardian .gpanel .act .cost { font-style: normal; font-size: 11px; font-weight: 700; color: var(--gold-deep); background: #F3E4C4; border-radius: 99px; padding: 1px 8px; }
+  #guardian .gpanel .act .cost.free { color: #2E7D4F; background: #DDF2E4; }
+  #guardian .gwallet { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--gold-line); padding-top: 8px; font-size: 12.5px; }
+  #guardian .gwallet b { color: var(--red); font: 700 16px var(--f-serif); }
+  #guardian .gwallet button { border: 0; background: none; color: var(--red); font-weight: 700; font-size: 12.5px; }
+  #guardian .gpanel { bottom: 84px; }
+
+  /* 剧集播放 */
+  #episode { background: #0D2150; }
+  .epplayer { position: relative; height: 240px; flex: 0 0 240px; background: #000; }
+  .epplayer video, .epplayer img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .epplayer .eback { position: absolute; top: 48px; left: 14px; z-index: 3; }
+  .epsoon { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; color: #fff; background: rgba(13,33,80,.55); z-index: 2; }
+  .epsoon[hidden], .epplayer [hidden] { display: none !important; }
+  .epsoon b { font: 700 20px var(--f-serif); } .epsoon span { font-size: 12px; opacity: .85; }
+  #episode .body { border-radius: 22px 22px 0 0; margin-top: -16px; position: relative; z-index: 2; }
+  /* 首页剧集视频 */
+  #home .hero .herov { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 55%; z-index: 0; }
+  #home .hero .mytag { position: absolute; z-index: 3; left: 18px; bottom: 34px; display: flex; gap: 8px; align-items: center; background: rgba(251,246,236,.92); border: 1px solid var(--gold-line); border-radius: 99px; padding: 4px 12px 4px 4px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  #home .hero .mytag img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; object-position: top; background: var(--ice); }
+  #home .hero .eptag { position: absolute; z-index: 3; right: 16px; bottom: 34px; background: var(--red); color: #fff; border-radius: 99px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+  /* ===== 降低新年感：蓝白为主，红色只做小点缀 ===== */
+  :root { --g-main: linear-gradient(180deg, #2A57A6, #14306B); }
+  .btn.red { background: var(--g-main); box-shadow: inset 0 0 0 1.5px rgba(234,211,166,.55), 0 10px 22px rgba(20,48,107,.28); }
+  .caps, .bar .ttl small, .grp, .notes .k, .sec .more, .stg.on b, #guardian .gwallet b, #guardian .gwallet button, .rwi span, .mis span, .led em, .rtable em, .evo b { color: var(--tibet-blue) !important; }
+  .pts { background: var(--g-main); box-shadow: inset 0 0 0 1.5px rgba(234,211,166,.55), 0 10px 22px rgba(20,48,107,.25); }
+  .quick span, .act span, .mis button, .song button, .steps6 li::before { background: var(--g-main) !important; }
+  .tabs .mid span { background: var(--g-main); box-shadow: 0 6px 16px rgba(20,48,107,.35), inset 0 0 0 1.5px rgba(234,211,166,.8); }
+  .tabs button.on, .tabs .mid { color: var(--glacier-navy); }
+  .stepbar i.on, .gtabs button.on { background: var(--tibet-blue); border-color: var(--tibet-blue); }
+  .nav.on { box-shadow: inset 3px 0 0 var(--tibet-blue); }
+  .notes .pager button:last-child { background: var(--g-main); }
+  .tpl.on .im, .wish.on, .tiers div.on, .rtable > div.hl { border-color: var(--tibet-blue) !important; }
+  .wish.on i { border-color: var(--tibet-blue); }
+  .xpbar i { background: linear-gradient(90deg, #8FBDEB, #2F63B0); }
+  .note.red { background: #EEF4FC; border-color: #C9DBF2; }
+  #landing h1.brushgold { font-family: var(--f-serif); font-weight: 900; font-size: 46px; letter-spacing: .08em; }
+  .chip.red { background: var(--lucky-red); }
+
+  #home .hero .avatar { border: 0; background: rgba(251,246,236,.92); border-radius: 99px; padding: 3px 10px 3px 3px; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(0,0,0,.12); }
+  #home .hero .avatar img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; object-position: top; background: var(--ice); }
+  #home .hero .avatar i { font-style: normal; font-size: 12px; font-weight: 700; }
+  .pstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+  .pstats div { background: var(--paper); border: 1px solid var(--gold-line); border-radius: 14px; padding: 10px; text-align: center; cursor: pointer; }
+  .pstats b { display: block; font: 700 20px var(--f-serif); color: var(--tibet-blue); } .pstats span { font-size: 11.5px; color: var(--ink-soft); }
+  .plist { background: var(--paper); border: 1px solid var(--gold-line); border-radius: 16px; margin-bottom: 12px; overflow: hidden; }
+  .plist button { width: 100%; border: 0; background: none; display: flex; align-items: center; gap: 12px; padding: 13px 14px; font-size: 14px; text-align: left; border-bottom: 1px solid rgba(196,154,90,.18); }
+  .plist button:last-child { border: 0; }
+  .plist button span { font-size: 18px; width: 24px; } .plist button em { margin-left: auto; font-style: normal; font-size: 12px; color: var(--ink-soft); }
+  .plist button::after { content: "›"; color: var(--ink-soft); margin-left: 6px; }
+  .plist button em + ::after { margin-left: 6px; }
+  .logout { margin-top: 4px; }
+
+  /* 新版玩法指南 */
+  .gp { display: grid; gap: 8px; margin: 10px 0; }
+  .gp div { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; }
+  .gp span { width: 26px; height: 26px; border-radius: 50%; background: var(--g-main); color: #fff; display: grid; place-items: center; font: 700 13px var(--f-serif); }
+  .gp p { margin: 0; font-size: 12.5px; color: var(--ink-soft); line-height: 1.6; } .gp b { display: block; color: var(--glacier-navy); font: 700 14px var(--f-serif); }
+  .flow { display: grid; grid-template-columns: 1fr auto 1fr; gap: 6px; align-items: center; margin: 10px 0; }
+  .flow > i { font-style: normal; color: var(--gold); font-size: 18px; text-align: center; }
+  .flow > i.down { grid-column: 1 / -1; }
+  .fnode { background: var(--paper); border: 1px solid var(--gold-line); border-radius: 16px; padding: 10px; text-align: center; }
+  .fnode.wide { grid-column: 1 / -1; }
+  .fnode img { height: 58px; width: auto; margin: 0 auto 4px; }
+  .fnode b { display: block; font: 700 14px var(--f-serif); }
+  .fnode small { font-size: 11px; color: var(--ink-soft); line-height: 1.5; }
+  .evo2 { display: flex; justify-content: center; align-items: flex-end; gap: 4px; }
+  .evo2 img { margin: 0 0 4px; } .evo2 img:nth-child(1) { height: 40px; } .evo2 img:nth-child(2) { height: 50px; } .evo2 img:nth-child(3) { height: 60px; } .evo2 img:nth-child(4) { height: 70px; }
+  .ghead { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .ghead img { width: 54px; height: 54px; object-fit: contain; }
+  .ecards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ecards div, .rgrid div { background: var(--paper); border: 1px solid var(--gold-line); border-radius: 14px; padding: 10px; display: grid; grid-template-columns: 40px 1fr; grid-template-rows: auto auto; column-gap: 8px; align-items: center; cursor: pointer; }
+  .ecards img, .ecards .eico { grid-row: span 3; width: 40px; height: 40px; object-fit: contain; border-radius: 10px; font-size: 26px; display: grid; place-items: center; }
+  .ecards b, .rgrid b { font: 700 13px var(--f-serif); }
+  .ecards em, .rgrid em { font-style: normal; font: 700 15px var(--f-serif); color: var(--tibet-blue); }
+  .ecards small { font-size: 10.5px; color: var(--ink-soft); }
+  .rgrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .rgrid div { display: block; text-align: center; }
+  .rgrid img { height: 56px; width: auto; max-width: 100%; object-fit: contain; margin: 0 auto 4px; border-radius: 8px; }
+  .rgrid b { display: block; font-size: 12px; } .rgrid em { font-size: 13px; }
+  .ftable { display: grid; gap: 6px; }
+  .ftable div { display: grid; grid-template-columns: 60px 1fr auto; align-items: center; gap: 8px; background: var(--paper); border: 1px solid var(--gold-line); border-radius: 12px; padding: 9px 12px; font-size: 13px; }
+  .ftable div.hl { border: 2px solid var(--tibet-blue); background: #fff; }
+  .ftable span { font: 700 14px var(--f-serif); } .ftable em { font-style: normal; color: var(--ink-soft); font-size: 12px; } .ftable b { color: var(--tibet-blue); font-size: 12.5px; }
+  .vflow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .vflow div { background: var(--paper); border: 1px solid var(--gold-line); border-radius: 12px; padding: 8px 4px; text-align: center; }
+  .vflow img, .vflow .eico { height: 34px; width: auto; margin: 0 auto 2px; font-size: 24px; display: block; }
+  .vflow b { display: block; font: 700 12px var(--f-serif); } .vflow small { font-size: 10px; color: var(--ink-soft); line-height: 1.4; display: block; }
+
+  /* 3D icons */
+  .quick button .ic3d { width: 44px; height: 44px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(20,48,107,.18)); }
+  #guardian .gpanel .act .ic3d { width: 52px; height: 52px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(20,48,107,.2)); transition: transform .15s var(--ease-out); }
+  #guardian .gpanel .act:active .ic3d { transform: scale(.9); }
+  #guardian .gside button .ic3d { width: 30px; height: 30px; object-fit: contain; }
+  .quick button { padding: 8px 2px; }
+  @media (prefers-reduced-motion: reduce) { .scr.on, .sheet, .modal.on { animation: none; } #gen .ring img { animation: none; } }
+
+  /* ========== 分享模式：只留中间的 Demo ========== */
+  html.demo .side, html.demo .notes { display: none; }
+  html.demo .stage { grid-template-columns: 1fr; }
+  @media (min-width: 901px) {
+    /* 去掉两侧米色面板后，背板换成冰川蓝，避免大面积奶油色发灰 */
+    html.demo .center { background: var(--glacier-navy) url(assets/bg-landing.jpg) center/cover; }
+    html.demo .center::before { background: linear-gradient(160deg, rgba(29, 63, 134, .86), rgba(13, 33, 80, .94)); backdrop-filter: blur(10px); }
+  }
+
+</style>
+<script>if (/[?&]demo\b/.test(location.search)) document.documentElement.classList.add("demo");</script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-6 8 6v8a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/></symbol>
+  <symbol id="i-paw" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75"><ellipse cx="12" cy="16" rx="5" ry="4"/><circle cx="6" cy="10" r="2"/><circle cx="10" cy="6" r="2"/><circle cx="14" cy="6" r="2"/><circle cx="18" cy="10" r="2"/></g></symbol>
+  <symbol id="i-film" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></g></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M3 9h18M12 9v11M12 9c-2-4-6-4-6-1s6 1 6 1 6 2 6-1-4-3-6 1"/></g></symbol>
+  <symbol id="i-tri" viewBox="0 0 24 24"><path d="M8 5l12 7-12 7z" fill="#14306B"/></symbol>
+</svg>
+
+<div class="stage">
+  <aside class="side">
+    <img src="assets/logo-navy.png" alt="5100">
+    <div class="name">HIMALAYAN GUARDIANS</div>
+    <div class="cn">喜马拉雅守护者 · Web App Demo</div>
+    <div id="navlist"></div>
+  </aside>
+
+  <main class="center">
+    <div class="phone" id="phone"><div class="screen" id="screen">
+      <div class="toast" id="toast"></div>
+
+      <section class="scr" id="landing" data-g="A · 扫码进入" data-t="扫码落地 + 祝福视频弹窗" data-own="我们做"
+        data-n="扫码后先看到雪山、经幡和六位守护者，接着自动弹出一段真实的 AI 祝福视频：用户第一眼就知道能做出什么。"
+        data-ux="以前要先注册、验证收据才能玩。现在<b>先体验、后注册</b>：扫码 → 看视频 → 直接做祝福，到分享领奖时才填资料，流失更少。">
+        <video class="bgv" id="lvA" muted playsinline autoplay poster="assets/video/v-snow-leopard.jpg" src="assets/video/v-snow-leopard.mp4"></video>
+        <video class="bgv" id="lvB" muted playsinline style="opacity:0"></video>
+        <div class="top">
+          <img class="logo" src="assets/logo-navy.png" alt="5100">
+          <div class="series">HIMALAYAN GUARDIANS<small>喜马拉雅守护者系列</small></div>
+          <h1 class="brushgold">雪域守护者</h1>
+          <div class="tag">A GIFT FROM 5,100 METRES</div>
+          <span class="chip red" style="margin-top:8px">🏮 2027 新春限定</span>
+        </div>
+        <div class="gname" id="lgname"><b>雪豹</b> SNOW LEOPARD · 勇气 · 守护</div>
+        <div class="foot">
+          <div class="perks"><span><i>✦</i>AI 新年祝福</span><span><i>✦</i>iPhone 抽奖</span><span><i>✦</i>养守护者</span></div>
+          <button class="btn red" data-modal="m-bless"><b>开启我的雪域之旅</b><small>START YOUR JOURNEY</small></button>
+          <button class="btn text" data-go="login"><b>已是会员？直接登录</b></button>
+        </div>
+        <div class="carpet" style="position:absolute;left:0;right:0;bottom:0;z-index:3"></div>
+      </section>
+
+      <section class="scr paper" id="tpl" data-g="B · AI 新年祝福" data-t="选择模板" data-own="我们做"
+        data-n="4 款同事设计的新年模板 + 1 款低调版（铺满全屏，结尾出 5100 logo）。左右滑动，选中的有红框。"
+        data-ux="顶部三段进度条：<b>模板 → 照片 → 祝福语</b>，用户知道还剩几步。">
+        <div class="bar"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl"><small>NEW YEAR BLESSING</small><b>AI 新年祝福</b></div></div>
+        <div class="body">
+          <div class="stepbar"><i class="on"></i><i></i><i></i></div>
+          <div class="caps">STEP 1 · TEMPLATE</div>
+          <div class="h1">选一个新年模板</div>
+          <div class="tpls">
+            <button class="tpl on"><div class="im"><img src="assets/t1-5100xinnianzhufu.webp" alt=""></div><div class="l">5100 新年祝福</div></button>
+            <button class="tpl"><div class="im"><img src="assets/t2-xinchunnafu.webp" alt=""></div><div class="l">新春纳福</div></button>
+            <button class="tpl"><div class="im"><img src="assets/t3-xinniankuaile.webp" alt=""></div><div class="l">新年快乐</div></button>
+            <button class="tpl"><div class="im"><img src="assets/t4-xinchundaji.webp" alt=""></div><div class="l">新春大吉</div></button>
+            <button class="tpl plain"><div class="im"><div><img src="assets/logo-white.png" alt="" style="width:110px;margin:0 auto 8px"><span class="brushgold" style="font-size:30px">新年快乐</span></div></div><div class="l">低调版 · 片尾 logo</div></button>
+          </div>
+        </div>
+        <div class="foot"><button class="btn red" data-go="photo"><b>下一步：拍照</b><small>NEXT</small></button></div>
+      </section>
+
+      <section class="scr paper" id="photo" data-g="B · AI 新年祝福" data-t="拍照 / 上传" data-own="我们做"
+        data-n="拍照前先告诉用户怎么拍效果最好，减少失败重做，也省 AI 费用。"
+        data-ux="「拍照」是主按钮，「从相册选」是次按钮；拍照提示用图标，不用读字。">
+        <div class="bar"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl"><small>NEW YEAR BLESSING</small><b>AI 新年祝福</b></div></div>
+        <div class="body">
+          <div class="stepbar"><i class="on"></i><i class="on"></i><i></i></div>
+          <div class="caps">STEP 2 · YOUR PHOTO</div>
+          <div class="h1">拍一张你的照片</div>
+          <p class="sub">AI 会让照片里的你亲口说祝福，还会抱拳拜年。</p>
+          <div class="guide"><div class="oval">把脸放在<br>框里</div></div>
+          <div class="tips"><div><b>🙂</b>正脸</div><div><b>☀️</b>光线亮</div><div><b>🚫</b>不遮挡</div></div>
+        </div>
+        <div class="foot"><div class="row"><button class="btn red" data-go="wish"><b>📷 拍照</b></button><button class="btn ghost" data-go="wish"><b>从相册选</b></button></div></div>
+      </section>
+
+      <section class="scr paper" id="wish" data-g="B · AI 新年祝福" data-t="选祝福语" data-own="我们做"
+        data-n="4 句预设祝福（已实测 AI 能一字不差说出来），也可以「自己写一句」：普通话最多 20 字、English / Bahasa 最多 80 个字母（约 7 秒能说完）。自己写的会先过内容审核。"
+        data-ux="字数上限 = 视频长度能说完的量；输入时<b>实时显示字数</b>，超过就不能生成。结果页用字幕显示用户写的那句。">
+        <div class="bar"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl"><small>NEW YEAR BLESSING</small><b>AI 新年祝福</b></div></div>
+        <div class="body">
+          <div class="stepbar"><i class="on"></i><i class="on"></i><i class="on"></i></div>
+          <div class="caps">STEP 3 · YOUR WISH</div>
+          <div class="h1">你想说哪一句？</div>
+          <button class="wish on"><i></i>新年快乐！祝你身体健康，万事如意！</button>
+          <button class="wish"><i></i>恭喜发财！新的一年好运连连，心想事成！</button>
+          <button class="wish"><i></i>新年快乐！祝你和家人平平安安，幸福美满！</button>
+          <button class="wish"><i></i>羊年大吉！祝你三阳开泰，财源滚滚！</button>
+          <div class="wish custom" id="wishcustom"><i></i><div><b style="font:700 15px var(--f-serif)">✍️ 自己写一句</b><textarea id="wishtxt" placeholder="例如：祝阿嬷身体健康，长命百岁！"></textarea><div class="cnt"><span>会经过内容审核 · 不能有不当字词</span><b id="wishn">0/20 字</b></div></div></div>
+          <div class="seg" id="wishlang" style="margin-top:6px"><button class="on">普通话</button><button>English</button><button>Bahasa</button></div>
+        </div>
+        <div class="foot"><button class="btn red" data-do="makewish"><b>✨ 生成我的祝福视频</b><small>CREATE</small></button></div>
+      </section>
+
+      <section class="scr" id="gen" data-g="B · AI 新年祝福" data-t="生成中" data-own="我们做"
+        data-n="AI 约 60–90 秒。进度圈 + 三个步骤 + 品牌小知识，让等待也在讲 5100 的故事。"
+        data-ux="等待时<b>可以离开</b>：做好会通知（正式版用推送 / WhatsApp），不用一直盯着。">
+        <div class="body" style="padding-top:76px">
+          <div style="text-align:center"><div class="caps" style="color:var(--gold-light)">CRAFTING YOUR BLESSING</div><div class="h1" style="color:#fff">正在制作你的新年祝福</div></div>
+          <div class="ring">
+            <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="4"/><circle id="ringbar" cx="50" cy="50" r="46" fill="none" stroke="url(#gg)" stroke-width="4" stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="289"/><defs><linearGradient id="gg"><stop offset="0" stop-color="#EAD3A6"/><stop offset="1" stop-color="#C8202A"/></linearGradient></defs></svg>
+            <img src="assets/g-snow-leopard.png" alt="">
+          </div>
+          <div class="pct" id="pct">0%</div>
+          <div class="list">
+            <div data-step="0"><i>✓</i>识别你的照片</div>
+            <div data-step="1"><i>✓</i>生成说话和抱拳拜年动作</div>
+            <div data-step="2"><i>✓</i>加上新年模板和 5100 新年曲</div>
+          </div>
+          <div class="fact">💧 你知道吗？5100 的水源来自西藏念青唐古拉山，海拔 5,100 米，是世界罕见的冰川自涌泉。</div>
+        </div>
+      </section>
+
+      <section class="scr paper" id="result" data-g="B · AI 新年祝福" data-t="视频结果" data-own="我们做"
+        data-n="成品出现时直接大画面播放。示例是 AI 生成的演员 + 模板 1，用我们现在的真实流程做的。视频里说的就是用户选或自己写的那句，下面同步显示字幕（Demo 里示例视频固定，字幕会跟着变）。"
+        data-ux="只有一个红色主按钮（分享领抽奖），保存 / 重做是次要按钮，主次分明。">
+        <div class="bar"><button class="ib" data-go="home"><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl"><small>YOUR BLESSING</small><b>你的新年祝福</b></div></div>
+        <div class="body">
+          <div class="video"><video id="vid" src="assets/sample-blessing.mp4" poster="assets/sample-poster.jpg" playsinline loop></video><div class="subt"><span id="subt">新年快乐！祝你身体健康，万事如意！</span></div><div class="play" id="vplay"><span><svg width="26" height="26"><use href="#i-tri"/></svg></span></div></div>
+        </div>
+        <div class="foot"><button class="btn red" data-go="share"><b>分享到社交平台 · 再 +1 次抽奖</b><small>SHARE</small></button><div class="row"><button class="btn ghost" data-toast="已保存到相册"><b>保存视频</b></button><button class="btn ghost" data-go="tpl"><b>再做一个</b></button></div></div>
+      </section>
+
+      <section class="scr paper" id="share" data-g="B · AI 新年祝福" data-t="分享 + 领抽奖" data-own="我们做"
+        data-n="Instagram / TikTok / Facebook / WhatsApp（马来西亚最常用的平台）。一键复制 Hashtag 和文案；发布后领取 +1 次抽奖。"
+        data-ux="领奖时才要求注册：用户已经拿到视频，这时候注册意愿最高。">
+        <div class="bar"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl"><small>SHARE & WIN</small><b>分享你的祝福</b></div></div>
+        <div class="body">
+          <div class="h1">发出去，多 1 次 iPhone 抽奖机会</div>
+          <p class="sub">带上指定 Hashtag 发布即可。</p>
+          <div class="plats">
+            <button class="plat" data-toast="打开 Instagram（Demo）"><span style="background:radial-gradient(circle at 30% 107%,#FDF497 0%,#FDF497 5%,#FD5949 45%,#D6249F 60%,#285AEB 90%)"><svg viewBox="0 0 24 24" width="24" height="24" fill="#fff"><path d="M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077"/></svg></span>Instagram</button>
+            <button class="plat" data-toast="打开 TikTok（Demo）"><span style="background:#000"><svg viewBox="0 0 24 24" width="24" height="24" fill="#fff"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg></span>TikTok</button>
+            <button class="plat" data-toast="打开 Facebook（Demo）"><span style="background:#0866FF"><svg viewBox="0 0 24 24" width="24" height="24" fill="#fff"><path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z"/></svg></span>Facebook</button>
+            <button class="plat" data-toast="打开 WhatsApp（Demo）"><span style="background:#25D366"><svg viewBox="0 0 24 24" width="24" height="24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg></span>WhatsApp</button>
+          </div>
+          <div class="card" style="margin-top:14px">
+            <b style="font:700 14px var(--f-serif)">复制文案和 Hashtag</b>
+            <div class="tags"><span class="chip red">#5100新年好运</span><span class="chip red">#5100雪域好友</span><span class="chip navy">#HimalayanGuardians</span></div>
+            <p class="sub" style="margin:0">新年有 5100，好水有好运！这是我送给你的新年祝福 🏔️🧧 来自海拔 5,100 米的好运～</p>
+            <button class="btn ghost" style="height:40px;margin-top:10px" data-toast="已复制文案和 Hashtag"><b style="font-size:13px">一键复制</b></button>
+          </div>
+        </div>
+        <div class="foot"><button class="btn red" data-do="share"><b>我已发布，领取 +1 次</b><small>CLAIM</small></button></div>
+      </section>
+
+      <section class="scr paper" id="register" data-g="C · 成为守护者" data-t="注册（只要 3 项）" data-own="我们做"
+        data-n="姓名、手机、Email 三项（提案要求），手机默认 +60。"
+        data-ux="一页填完，不拆多页；标题直接告诉用户<b>为什么要填</b>：领取抽奖机会和守护者。">
+        <div class="regtop"><img src="assets/stage-1-cub.png" alt=""></div>
+        <div class="body" style="margin-top:-30px;z-index:2">
+          <div class="caps">JOIN THE GUARDIANS</div>
+          <div class="h1">领取你的抽奖机会</div>
+          <p class="sub">加入 5100 守护者，领取 iPhone 抽奖机会，再领养一只属于你的守护者。</p>
+          <div class="field"><label>姓名</label><input value="Lim Mei Ling"></div>
+          <div class="field"><label>手机号码</label><div style="display:flex;gap:8px"><span style="height:50px;padding:0 12px;border-radius:12px;background:#EDE2CD;display:flex;align-items:center;font-weight:700">+60</span><input value="12-345 6789"></div></div>
+          <div class="field"><label>Email</label><input value="meiling@email.com"></div>
+          <p style="font-size:11.5px;color:var(--ink-soft);margin:0">✓ 我同意活动条款与隐私政策</p>
+        </div>
+        <div class="foot"><button class="btn red" data-go="verify"><b>下一步</b><small>CONTINUE</small></button></div>
+      </section>
+
+      <section class="scr paper" id="verify" data-g="C · 成为守护者" data-t="购买验证（可稍后）" data-own="我们做（审核在后台）"
+        data-n="输入盲盒内 Unique Code，或上传收据。验证成功 = 1 次基础抽奖机会。"
+        data-ux="没买的人可以<b>稍后再验证</b>，先成为普通会员（提案 Entry 2），不会卡在这一步。">
+        <div class="bar"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl"><small>VERIFY PURCHASE</small><b>验证你的盲盒</b></div></div>
+        <div class="body">
+          <div class="tabs2"><button class="on" data-seg="code">输入 Unique Code</button><button data-seg="rc">上传收据</button></div>
+          <div data-pane="code">
+            <p class="sub" style="margin-bottom:6px">盲盒内守护者卡片背面的 8 位代码</p>
+            <div class="codebox"><span>5</span><span>1</span><span>0</span><span>0</span><span>H</span><span>G</span><span>2</span><span>7</span></div>
+            <div class="card" style="display:flex;gap:12px;align-items:center"><img src="assets/box.jpg" alt="" style="width:56px;height:70px;object-fit:cover;border-radius:8px"><div style="font-size:12px;color:var(--ink-soft);line-height:1.6"><b style="color:var(--glacier-navy)">找不到代码？</b><br>刮开卡片背面银色涂层就能看到</div></div>
+          </div>
+          <div data-pane="rc" hidden><div class="drop"><div><span style="font-size:32px">🧾</span><br><b style="color:var(--glacier-navy)">拍下或上传收据</b><br>需看到店名、日期和 5100 新春盲盒</div></div></div>
+        </div>
+        <div class="foot"><button class="btn red" data-do="verify" data-go="welcome"><b>提交验证</b><small>SUBMIT</small></button><button class="btn text" data-go="welcome"><b>还没买？稍后再验证</b></button></div>
+      </section>
+
+      <section class="scr" id="welcome" data-g="C · 成为守护者" data-t="欢迎加入 + 新人礼" data-own="我们做"
+        data-n="会员卡用盲盒同款象牙白 + 藏式边纹，一次给齐新人礼：抽奖机会 + 100 Points。"
+        data-ux="成功页只有一个下一步：<b>领养守护者</b>，自然进入养成玩法。">
+        <div class="glow"></div>
+        <div class="body" style="padding-top:70px;z-index:2">
+          <div style="text-align:center"><div class="caps" style="color:var(--gold-light)">WELCOME, GUARDIAN</div><div class="h1" style="color:#fff">欢迎加入 5100 守护者</div></div>
+          <div class="mcard" style="margin-top:16px"><img class="lg" src="assets/logo-navy.png" alt=""><img class="gd" src="assets/g-snow-leopard.png" alt=""><div><div class="nm">Lim Mei Ling</div><div class="no">GUARDIAN NO. 2027 0206</div></div></div>
+          <div class="gifts"><div class="gift"><b class="brushgold" data-bind="entries">2</b><span>次 iPhone 抽奖机会</span></div><div class="gift"><b class="brushgold">+100</b><span>新人 Points</span></div></div>
+        </div>
+        <div class="foot"><button class="btn red" data-go="pick"><b>领养我的守护者</b><small>CHOOSE YOUR GUARDIAN</small></button></div>
+      </section>
+
+      <section class="scr paper" id="pick" data-g="D · 守护者养成" data-t="选择你的守护者" data-own="我们做"
+        data-n="六位守护者各有特质（勇气、力量、纯净……），藏羚羊是羊年限定。左右滑动，选一位领养。"
+        data-ux="一次只看一位的大卡片，比 6 宫格更有「领养」的仪式感。">
+        <div class="bar"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl"><small>CHOOSE YOUR GUARDIAN</small><b>选择你的守护者</b></div></div>
+        <div class="body">
+          <div class="gcar" id="gcar"></div>
+          <p class="sub" style="text-align:center;margin:0">← 左右滑动，认识六位守护者 →</p>
+        </div>
+        <div class="foot"><button class="btn red" data-do="adopt"><b>就是你了！</b><small>CHOOSE</small></button></div>
+      </section>
+
+      <section class="scr" id="guardian" data-g="D · 守护者养成" data-t="日常照顾（养成主页）" data-own="我们做"
+        data-n="照图一的养成系统：幼崽 → 探索者 → 守护者 → 传说守护者。整页就是守护者的视频，宠物是主角；喂食、照顾、玩耍、休息会涨心情和羁绊，经验满了就升级（Demo 里点几下就能看到升级）。"
+        data-ux="宠物铺满整页、最大最显眼；状态和按钮做成半透明浮层，<b>不挡宠物</b>；按一下有跳字和闪光反馈；成长路线收进右侧按钮。">
+        <div class="scene">
+          <video class="petv" id="petv" muted loop playsinline></video>
+          <img class="pet" id="petimg" src="assets/stage-1-cub.png" alt="">
+          <div class="top">
+            <img data-bind="gimg" src="assets/g-snow-leopard.png" alt="">
+            <div class="xp">
+              <div class="nm"><span data-bind="gname">雪豹</span> · <span data-bind="stagename">幼崽</span> <span class="chip red" style="padding:2px 7px" data-bind="lv">Lv.1</span><span class="xpn" data-bind="xp">20/100</span></div>
+              <div class="xpbar"><i id="xpbar" style="width:20%"></i></div>
+              <div class="mini">
+                <span>心情</span><div class="tr"><i id="mood" style="width:60%;background:linear-gradient(90deg,#F2C14E,#E9822F)"></i></div><em data-bind="moodtxt">60</em>
+                <span>羁绊</span><div class="tr"><i id="bond" style="width:40%;background:linear-gradient(90deg,#F08A8F,var(--red))"></i></div><em data-bind="bondtxt">40</em>
+              </div>
+            </div>
+          </div>
+          <div class="bubble" id="bubble">肚子有点饿…</div>
+          <div class="gside">
+            <button data-modal="m-stages"><img class="ic3d" src="assets/icons/grow.png" alt="">成长</button>
+            <button data-go="journey"><img class="ic3d" src="assets/icons/explore.png" alt="">探索</button>
+            <button data-go="game"><img class="ic3d" src="assets/icons/game.png" alt="">小游戏</button>
+            <button data-modal="m-gplay"><img class="ic3d" src="assets/icons/guide.png" alt="">玩法</button>
+          </div>
+        </div>
+        <div class="gpanel">
+          <button class="act" data-care="feed"><img class="ic3d" src="assets/icons/feed.png" alt=""><b>喂食</b><i class="cost">⭐ 10</i></button>
+          <button class="act" data-care="care"><img class="ic3d" src="assets/icons/care.png" alt=""><b>照顾</b><i class="cost">⭐ 5</i></button>
+          <button class="act" data-care="play"><img class="ic3d" src="assets/icons/play.png" alt=""><b>玩耍</b><i class="cost">⭐ 8</i></button>
+          <button class="act" data-care="rest"><img class="ic3d" src="assets/icons/rest.png" alt=""><b>休息</b><i class="cost free">免费</i></button>
+          <div class="gwallet"><span>我的积分 <b data-bind="points">100</b></span><button data-go="missions">赚积分 →</button></div>
+        </div>
+        <nav class="tabs" data-tab="guardian"></nav>
+      </section>
+
+      <section class="scr" id="journey" data-g="D · 守护者养成" data-t="探索之旅（地图）" data-own="我们做"
+        data-n="守护者升到 Lv.2 解锁喜马拉雅探索地图：冰川湖 → 冰川洞 → 经幡谷 → 神圣之峰。每到一站得到一张「新的回忆」和一段故事。"
+        data-ux="地图上的位置就是进度；锁住的站点直接写解锁条件（Lv.3、Lv.5）。">
+        <div class="bar" style="position:absolute;left:0;right:0;top:0"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl" style="background:rgba(251,246,236,.92);border-radius:12px;padding:4px 0"><small>HIMALAYAN JOURNEY</small><b>喜马拉雅探索之旅</b></div></div>
+        <div class="map">
+          <div class="mapin" id="mapin">
+          <button class="pin done" style="left:67.7%;top:82%" data-spot="0"><span>✓</span><em>冰川湖 Snow Lake</em></button>
+          <button class="pin" style="left:61%;top:60.2%" data-spot="1"><span>❄</span><em>冰川洞 Glacier Cave</em></button>
+          <button class="pin lock" style="left:39.3%;top:31.9%" data-spot="2"><span>🔒</span><em>经幡谷 · Lv.3</em></button>
+          <button class="pin lock" style="left:63.3%;top:12.6%" data-spot="3"><span>🔒</span><em>神圣之峰 · Lv.5</em></button>
+          <img class="me" id="me" data-bind="stageimg" src="assets/stage-2-explorer.png" alt="" style="left:67.7%;top:82%">
+          </div>
+          <button class="zoomout" data-do="mapout">⤢ 返回全图</button>
+          <div class="spotcard" id="spotcard">
+            <div class="caps" id="spcaps"></div>
+            <div class="h1" style="font-size:20px"><span id="spname"></span><span class="tag" id="sptag"></span></div>
+            <p class="sub" id="sptext" style="margin:6px 0 0"></p>
+            <div class="rw" id="sprw"></div>
+            <div class="row"><button class="btn ghost" data-do="mapout"><b>返回全图</b></button><button class="btn red" id="spbtn" data-do="spotgo"><b>出发</b></button></div>
+          </div>
+          <div class="panel"><button class="btn red" data-do="explore"><b>🧭 出发探索</b><small>EXPLORE NOW</small></button></div>
+        </div>
+      </section>
+
+      <section class="scr paper" id="memories" data-g="D · 守护者养成" data-t="新的回忆 + 收藏" data-own="我们做"
+        data-n="每到一站得到一张「回忆照片」，可以分享；还能收集徽章、专属外观、守护故事。"
+        data-ux="回忆照片是第二个可以分享的内容，带 5100 品牌，持续带来曝光。">
+        <div class="bar"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl"><small>NEW MEMORY</small><b>新的回忆</b></div></div>
+        <div class="body">
+          <div class="memory"><div class="ph"><img data-bind="stageimg" src="assets/stage-2-explorer.png" alt=""></div><b>冰川洞 · 初遇纯净</b><span>Glacier Cave Discovery · 2027.02.06</span></div>
+          <div class="collect">
+            <div><span>🏅</span>冰川徽章</div>
+            <div class="lock"><span>🧣</span>专属围巾</div>
+            <div class="lock"><span>📜</span>守护故事</div>
+          </div>
+        </div>
+        <div class="foot"><button class="btn red" data-go="guardian"><b>🍖 继续喂养守护者</b><small>KEEP CARING</small></button><div class="row"><button class="btn ghost" data-toast="已生成分享图"><b>分享这张回忆</b></button><button class="btn ghost" data-go="journey"><b>回到地图</b></button></div></div>
+      </section>
+
+      <section class="scr" id="home" data-g="E · 首页" data-t="首页：你好，守护者" data-own="我们做"
+        data-n="会员每天打开的第一页：守护者在雪山上跟你打招呼，Points 和等级、四个常用入口、AI 祝福、抽奖次数、守护者的冒险。"
+        data-ux="最重要的数字（Points、抽奖次数）都在第一屏；守护者会根据状态说话，<b>提醒用户回来照顾它</b>。">
+        <div class="body" style="padding:0">
+          <div class="hero">
+            <div class="hi"><div><span class="caps">HELLO, GUARDIAN!</span><b>你好，Mei Ling</b></div><button class="avatar" data-go="profile" aria-label="我的"><img data-bind="gimg" src="assets/g-snow-leopard.png" alt=""><i>我的</i></button></div>
+
+            <video class="petv" id="homev" muted loop playsinline hidden></video>
+            <video class="herov" src="assets/video/v-drama.mp4" poster="assets/band-cast.jpg" autoplay muted loop playsinline></video>
+            <div class="hcast" id="hcast" hidden></div>
+            <div class="mytag" data-go="guardian"><img data-bind="gimg" src="assets/g-snow-leopard.png" alt=""><span>我的<span data-bind="gname">雪豹</span> · 去照顾 →</span></div>
+            <div class="eptag" data-ep="0">▶ 第 1 集</div>
+          </div>
+          <div style="padding:0 18px 20px">
+            <div class="pts"><div><small>MY POINTS · 我的积分</small><b data-bind="points">100</b></div><div class="tier"><img data-bind="tierimg" src="assets/tier-1.png" alt=""><span data-bind="tiername">探索者</span></div></div>
+            <div class="quick">
+              <button data-go="guardian"><img class="ic3d" src="assets/icons/guardian.png" alt="">守护者</button>
+              <button data-go="missions"><img class="ic3d" src="assets/icons/mission.png" alt="">任务</button>
+              <button data-go="rewards"><img class="ic3d" src="assets/icons/gift.png" alt="">礼赠</button>
+              <button data-go="guide"><img class="ic3d" src="assets/icons/guide.png" alt="">玩法</button>
+            </div>
+            <div class="sec"><div><span class="caps">NEW YEAR BLESSING</span><b>AI 新年祝福</b></div></div>
+            <div class="blesscard" data-go="tpl"><video src="assets/sample-blessing.mp4" poster="assets/sample-poster.jpg" muted autoplay loop playsinline></video><div><b>亲口送出新年祝福</b><span>拍一张照片，1 分钟生成，分享再 +1 次抽奖</span><span class="chip red" style="align-self:flex-start">立即制作 →</span></div></div>
+            <div class="sec"><div><span class="caps">IPHONE LUCKY DRAW</span><b>iPhone DUO 抽奖</b></div><span class="more" data-go="draw">详情 →</span></div>
+            <div class="card drawcard" data-go="draw"><img class="ph" src="assets/iphone-duo.png" alt="iPhone DUO"><div class="dc"><span class="caps">PRIZE · 共 5 台</span><b>iPhone DUO</b><span>2 月 20 日公布得奖</span></div><div class="n"><b data-bind="entries">1</b><small>次机会</small></div></div>
+            <div class="sec"><div><span class="caps">GUARDIAN STORIES</span><b>守护者的冒险</b></div><span class="more" data-go="hub">全部 →</span></div>
+            <div class="eps" id="homeeps"></div>
+          </div>
+        </div>
+        <nav class="tabs" data-tab="home"></nav>
+      </section>
+
+      <section class="scr paper" id="missions" data-g="F · 任务与礼赠" data-t="守护任务 + 会员等级" data-own="我们做"
+        data-n="7 天签到条（第 7 天 +100）；任务分三组：每日任务（照顾、小游戏、分享）、常驻任务（扫瓶身码 +50 + 冰川水、看剧集、了解水源、邀请好友）、新春季度挑战（+300 + 1 次抽奖）。数字和「玩法指南」一致。"
+        data-ux="每个任务都有<b>进度条</b>（例如 3/7）；做完变「领取」，领完变灰不会重复领；奖励用标签写清楚（积分 / 冰川水 / 抽奖）。">
+        <div class="bar"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl"><small>GUARDIAN MISSIONS</small><b>守护任务</b></div></div>
+        <div class="body">
+          <div class="tiercard"><img data-bind="tierimg" src="assets/tier-1.png" alt=""><div style="flex:1"><small>MY TIER · 我的等级</small><b data-bind="tiername">探索者</b><div class="xpbar"><i id="tierbar" style="width:10%"></i></div><span style="font-size:11px;opacity:.8" data-bind="tiernext">再 900 Points 升级为守护者</span></div></div>
+          <div class="ckin">
+            <div class="top"><img src="assets/icons/checkin.png" alt=""><div><b>每日签到 +10</b><span>已连续 <span id="ckdays">3</span> 天 · 第 7 天额外 +100</span></div><button id="ckbtn" data-do="checkin">签到</button></div>
+            <div class="days" id="days"></div>
+          </div>
+          <div id="mislist"></div>
+        </div>
+        <nav class="tabs" data-tab="missions"></nav>
+      </section>
+
+      <section class="scr paper" id="scan" data-g="F · 任务与礼赠" data-t="扫瓶身码（再买一瓶）" data-own="我们做"
+        data-n="每瓶 5100 瓶盖内/瓶身有一个码，扫一次 +50 积分 + 1 瓶「冰川水」。冰川水是守护者最好的食物：经验 +50、心情直接满。"
+        data-ux="扫码结果直接告诉用户得到什么，并给「马上用冰川水喂守护者」，<b>把回购和养成连起来</b>。每个码只能用 1 次。">
+        <div class="bar"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl"><small>SCAN BOTTLE</small><b>扫瓶身码</b></div></div>
+        <div class="body" style="text-align:center">
+          <div id="scanstep1">
+            <p class="sub" style="margin:4px 0 0">对准瓶盖内或瓶身的 QR 码</p>
+            <div class="scanbox"><i></i></div>
+            <p class="sub" style="font-size:12px;margin:12px 0 0">每个码只能使用 1 次 · 也可以手动输入</p>
+            <div class="field" style="margin-top:10px;text-align:left"><input placeholder="手动输入瓶身码，例如 5100-8K2Q-77" id="scancode"></div>
+          </div>
+          <div id="scanstep2" class="scanok" hidden>
+            <div class="caps" style="margin-top:6px">SCAN SUCCESS</div>
+            <div class="h1" style="font-size:22px">扫码成功！谢谢你再选 5100</div>
+            <div class="gain"><div><img src="assets/icons/mission.png" alt=""><b>+50</b>积分</div><div><img src="assets/icons/feed.png" alt=""><b>+1</b>冰川水</div></div>
+            <p class="sub" style="font-size:13px">冰川水：守护者经验 +50、心情直接满。</p>
+          </div>
+        </div>
+        <div class="foot" id="scanfoot1"><button class="btn red" data-do="scan"><b>📷 扫描（Demo 模拟）</b><small>SCAN</small></button></div>
+        <div class="foot" id="scanfoot2" hidden><button class="btn red" data-do="usewater"><b>💧 马上用冰川水喂守护者</b><small>FEED NOW</small></button><button class="btn ghost" data-do="scanagain"><b>再扫一瓶</b></button></div>
+      </section>
+
+      <section class="scr paper" id="rewards" data-g="F · 任务与礼赠" data-t="积分兑换礼赠" data-own="我们做（核销在后台）"
+        data-n="积分可换：现金券、守护者金属吊饰、公仔、品牌帽、新春限定瓶。三个会员等级对应不同权益。"
+        data-ux="积分不够的礼品按钮变灰，直接写<b>还差多少分</b>，用户知道下一个目标。">
+        <div class="bar"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl"><small>REWARDS</small><b>积分兑换礼赠</b></div></div>
+        <div class="body">
+          <div class="tiers">
+            <div class="on" data-tier="0"><img src="assets/tier-1.png" alt=""><b>探索者</b>0 – 999</div>
+            <div data-tier="1"><img src="assets/tier-2.png" alt=""><b>守护者</b>1,000 – 2,999</div>
+            <div data-tier="2"><img src="assets/tier-3.png" alt=""><b>守护精英</b>3,000+</div>
+          </div>
+          <div class="sec"><div><span class="caps">MERCHANT VOUCHERS</span><b>商家优惠券</b></div><span class="more">我的积分 <span data-bind="points">100</span></span></div>
+          <div class="mvlist" id="mvlist"></div>
+          <div class="sec"><div><span class="caps">GIFTS</span><b>兑换礼品</b></div></div>
+          <div class="rw" id="rwlist"></div>
+        </div>
+        <nav class="tabs" data-tab="rewards"></nav>
+      </section>
+
+      <section class="scr paper" id="draw" data-g="G · 抽奖与内容" data-t="iPhone 抽奖机会" data-own="我们做（抽奖系统在后台）"
+        data-n="公平机制摊开给用户看：购买验证 +1、分享祝福 +1、季度挑战 +1，每人上限 5 次。"
+        data-ux="还没完成的项目直接给「去完成」，<b>从这里就能去赚次数</b>。">
+        <div class="bar" style="position:absolute;left:0;right:0;top:0;z-index:3"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button></div>
+        <div class="dhero">
+          <button class="rules" id="drawrules">规则 ⓘ</button>
+          <div class="txt"><div class="caps">IPHONE DUO LUCKY DRAW</div><h1>抽 iPhone DUO</h1><div class="meta">共 5 台 · 2027 年 2 月 20 日公布</div></div>
+        </div>
+        <div class="body" style="padding-top:0">
+          <div class="tkcard">
+            <div class="t1"><small>MY ENTRIES · 我的抽奖机会</small><b><span data-bind="entries">1</span><i> / 5 次</i></b></div>
+            <div class="tix" id="tix"></div>
+            <p>每 1 次机会 = 1 张抽奖券，券越多中奖机会越大</p>
+          </div>
+          <div class="sec"><div><span class="caps">HOW TO GET</span><b>怎么获得抽奖机会</b></div></div>
+          <div class="led" id="led-buy"><div class="ic"><img src="assets/icons/receipt.png" alt=""></div><div><b>购买验证 · 每盒 +1</b><span>输入盲盒 Unique Code 或上传收据</span></div><em>+1</em></div>
+          <div class="led" id="led-share"><div class="ic"><img src="assets/icons/share.png" alt=""></div><div><b>分享 AI 新年祝福 · +1</b><span>带 #5100新年好运 发布（活动期内 1 次）</span></div><em>+1</em></div>
+          <div class="led" id="led-task"><div class="ic"><img src="assets/icons/trophy.png" alt=""></div><div><b>新春季度挑战 · +1</b><span>连续签到 7 天</span></div><em>+1</em></div>
+          <div class="sec"><div><span class="caps">PRIZE</span><b>奖品</b></div></div>
+          <div class="prize"><img src="assets/iphone-duo.png" alt="iPhone DUO" style="width:64px"><div><b>iPhone DUO × 5 台</b><span>得奖者以短信和 Email 通知，到指定门店领取</span></div></div>
+          <div class="sec"><div><span class="caps">TIMELINE</span><b>活动时间</b></div></div>
+          <div class="tline"><div class="on"><b>1 月 15 日</b>活动开始</div><div><b>2 月 15 日</b>截止参加</div><div><b>2 月 20 日</b>公布得奖</div></div>
+          <p class="sub" style="text-align:center;margin:16px 0 0;font-size:12px">每人最多 5 次 · 多买一盒，多一次机会</p>
+        </div>
+        <div class="foot"><button class="btn red" data-do="drawmore"><b>赚更多抽奖机会</b><small>GET MORE ENTRIES</small></button></div>
+      </section>
+
+      <section class="scr paper" id="hub" data-g="G · 抽奖与内容" data-t="守护者的冒险 + 新年曲" data-own="我们做页面（内容由内容团队做）"
+        data-n="六位守护者寻找纯净水源的 AI 动画剧（6–8 集 × 1 分钟）+ 5100 主题曲 / 喝水歌 + 马来西亚本地化短视频。部分集数用 Points 解锁。"
+        data-ux="锁住的集数写清楚怎么解锁（Points 或日期），把「看内容」和「赚积分」连起来。">
+        <div class="bar"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl"><small>GUARDIAN STORIES</small><b>守护者的冒险</b></div></div>
+        <div class="body">
+          <div class="ep-hero" data-ep="0"><video src="assets/video/v-drama.mp4" poster="assets/band-cast.jpg" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover"></video><div class="pl"><svg width="24" height="24"><use href="#i-tri"/></svg></div><div class="cap"><span class="chip red" style="margin-bottom:6px">新集 · 每周五更新</span><b>第 1 集：寻找纯净之源</b><span>六位来自不同地方的守护者，接到了寻找纯净水源的使命…</span></div></div>
+          <div class="sec"><div><span class="caps">EPISODES</span><b>全部集数</b></div><span class="more" id="epcount">2 / 8 已解锁</span></div>
+          <div class="eps" id="hubeps"></div>
+          <div class="sec"><div><span class="caps">MUSIC</span><b>5100 新年曲</b></div></div>
+          <div class="song"><img src="assets/scene-mountain.jpg" alt=""><div><b>5100 主题曲 · 雪域之声</b><span>西藏高原 · 海拔 5100 米</span></div><button data-toast="播放中（Demo）">▶</button></div>
+          <div class="song"><img src="assets/story-4.jpg" alt=""><div><b>喝水歌 · 和藏狐一起补水</b><span>儿童 / Family</span></div><button data-toast="播放中（Demo）">▶</button></div>
+        </div>
+        <nav class="tabs" data-tab="hub"></nav>
+      </section>
+
+      <section class="scr paper" id="brandz" data-g="G · 抽奖与内容" data-t="品牌故事" data-own="我们做"
+        data-n="提案的品牌故事六篇章：纯净之源、自然的守护者、守护的旅程、更明亮的明天、与世界共享、致敬未来。看完完成任务 +50 Points。"
+        data-ux="品牌教育做成任务（看完领积分），用户才愿意看完。">
+        <div style="height:300px;flex:0 0 300px;position:relative;background:url(assets/scene-mountain.jpg) center/cover"><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0) 40%,var(--ivory))"></div>
+          <div class="bar" style="position:absolute;left:0;right:0;top:0"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button></div>
+          <div style="position:absolute;left:18px;bottom:6px;z-index:2"><div class="caps">BRAND STORY</div><b style="font:700 54px/1 var(--f-serif)">5,100 m</b><div style="font:600 13px var(--f-serif);color:var(--gold-deep)">源于高原 · 致敬自然</div></div>
+        </div>
+        <div class="body" style="padding-top:8px">
+          <p class="sub">5100 的水源位于西藏当雄，泉眼海拔 5,100 米，是世界罕见的大型冰川自涌泉，冰川融水经多年岩层过滤，天然纯净。</p>
+          <div class="chapters" id="chapters"></div>
+          <div class="facts">
+            <div><b>🏔️ 冰川水源</b>念青唐古拉山脉</div>
+            <div><b>🏆 国际奖项</b>世界瓶装水大会「最佳矿泉水」</div>
+            <div><b>💎 天然矿物</b>锂、锶、偏硅酸</div>
+            <div><b>☪️ Halal</b>马来西亚 Halal 认证</div>
+          </div>
+        </div>
+        <div class="foot"><button class="btn red" data-do="readbrand"><b>看完了 · 领 +50 Points</b><small>COMPLETE</small></button></div>
+      </section>
+
+
+      <!-- ============ H · 5100 Club 玩法 ============ -->
+      <section class="scr paper" id="guide" data-g="H · 5100 Club 玩法" data-t="玩法指南（积分 / 喂养 / Voucher）" data-own="我们做"
+        data-n="把 5100 Club 的规则讲清楚：怎么玩、积分怎么赚、怎么用、和守护者的关系、怎么喂养、小游戏、Voucher 是什么。完整规则见 5100-club-rules.md。"
+        data-ux="一页看懂，顶部标签直接跳到想看的部分；每个规则旁边都有「去做」按钮，<b>看完马上能行动</b>。">
+        <div class="bar"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl"><small>HOW 5100 CLUB WORKS</small><b>5100 Club 玩法</b></div></div>
+        <div class="gtabs" id="gtabs">
+          <button class="on" data-jump="g-how">总览</button><button data-jump="g-earn">赚积分</button><button data-jump="g-feed">养守护者</button><button data-jump="g-use">换奖励</button><button data-jump="g-tier">会员等级</button><button data-jump="g-voucher">Voucher</button>
+        </div>
+        <div class="body" id="guidebody">
+          <!-- 总览：一张图看懂 -->
+          <div id="g-how">
+            <div class="caps">HOW IT WORKS</div>
+            <div class="h1" style="font-size:22px">一张图看懂 5100 Club</div>
+            <div class="flow">
+              <div class="fnode"><img src="assets/rw-bottle.png" alt=""><b>① 买 5100</b><small>扫瓶身码<br>+50 积分 · 送冰川水</small></div>
+              <i>→</i>
+              <div class="fnode"><img class="coin" src="assets/tier-1.png" alt=""><b>② 拿积分</b><small>签到、任务、<br>小游戏、分享</small></div>
+              <i class="down">↓</i>
+              <div class="fnode wide"><div class="evo2"><img data-evo="1" src="assets/st-snow-leopard-1.png" alt=""><img data-evo="2" src="assets/st-snow-leopard-2.png" alt=""><img data-evo="3" src="assets/st-snow-leopard-3.png" alt=""><img data-evo="4" src="assets/st-snow-leopard-4.png" alt=""></div><b>③ 用积分养守护者</b><small>喂食、照顾、玩耍 → 守护者长大；<b>每次升级送回积分</b></small></div>
+              <i class="down">↓</i>
+              <div class="fnode"><img src="assets/rw-plush.png" alt=""><b>④ 换奖励</b><small>Voucher、公仔、<br>限定瓶</small></div>
+              <i>←</i>
+              <div class="fnode"><img src="assets/rw-coupon.png" alt=""><b>⑤ 到店使用</b><small>券到超市买 5100<br>再扫码，循环</small></div>
+            </div>
+            <div class="note">💡 <b>两种数值：</b>⭐ <b>积分</b> 是钱包（赚了可以花）；🌱 <b>经验</b> 是守护者的成长值（满 100 升 1 级）。</div>
+          </div>
+
+          <!-- 赚积分 -->
+          <div class="gsec" id="g-earn">
+            <div class="ghead"><img src="assets/tier-1.png" alt=""><div><div class="caps">STEP ② · EARN</div><div class="h1" style="font-size:20px">积分怎么赚</div></div></div>
+            <div class="ecards">
+              <div data-go="verify"><img src="assets/box.jpg" alt=""><b>验证盲盒</b><em>+100</em><small>每盒 1 次 · 送 1 次抽奖</small></div>
+              <div data-go="missions"><img src="assets/rw-bottle.png" alt=""><b>扫瓶身码</b><em>+50</em><small>每瓶 1 次 · 送 1 份冰川水</small></div>
+              <div data-go="missions"><span class="eico">📅</span><b>每日签到</b><em>+10</em><small>连签 7 天再 +100</small></div>
+              <div data-go="game"><span class="eico">🎮</span><b>冰川接水</b><em>≤30</em><small>每天 3 局</small></div>
+              <div data-go="tpl"><img src="assets/sample-poster.jpg" alt=""><b>分享 AI 祝福</b><em>+30</em><small>每天 1 次</small></div>
+              <div data-go="hub"><img src="assets/poster-1.jpg" alt=""><b>看一集冒险</b><em>+20</em><small>每集 1 次</small></div>
+              <div data-go="missions"><span class="eico">👥</span><b>邀请好友</b><em>+200</em><small>每月最多 5 人</small></div>
+              <div data-go="guardian"><img src="assets/st-snow-leopard-4.png" alt=""><b>守护者升级</b><em>+50~300</em><small>Lv.2 / Lv.3 / Lv.4</small></div>
+            </div>
+            <div class="note">😊 守护者心情 ≥ 80 时，赚到的积分 <b>×1.2</b>。</div>
+          </div>
+
+          <!-- 养守护者 -->
+          <div class="gsec" id="g-feed">
+            <div class="ghead"><img src="assets/st-snow-leopard-2.png" alt=""><div><div class="caps">STEP ③ · RAISE</div><div class="h1" style="font-size:20px">用积分养守护者</div></div></div>
+            <div class="ftable">
+              <div><span>喂食</span><em>−10 积分</em><b>经验 +20</b></div>
+              <div><span>照顾</span><em>−5 积分</em><b>羁绊 +10</b></div>
+              <div><span>玩耍</span><em>−8 积分</em><b>经验 +25</b></div>
+              <div><span>休息</span><em>免费 · 每天 1 次</em><b>下次喂食 ×1.5</b></div>
+              <div class="hl"><span>冰川水</span><em>扫瓶身码获得</em><b>经验 +50 · 心情满</b></div>
+            </div>
+            <div class="evo">
+              <div><img data-evo="1" src="assets/st-snow-leopard-1.png" alt=""><b>Lv.1</b>幼崽</div><i>→</i>
+              <div><img data-evo="2" src="assets/st-snow-leopard-2.png" alt=""><b>Lv.2 +50</b>探索者</div><i>→</i>
+              <div><img data-evo="3" src="assets/st-snow-leopard-3.png" alt=""><b>Lv.3 +100</b>守护者</div><i>→</i>
+              <div><img data-evo="4" src="assets/st-snow-leopard-4.png" alt=""><b>Lv.4 +300</b>传说</div>
+            </div>
+            <div class="note">养守护者是「花积分 → 升级送回积分」：养到传说一共送回 <b>450 积分</b>，比花掉的更多。</div>
+          </div>
+
+          <!-- 换奖励 -->
+          <div class="gsec" id="g-use">
+            <div class="ghead"><img src="assets/rw-plush.png" alt=""><div><div class="caps">STEP ④ · REDEEM</div><div class="h1" style="font-size:20px">积分换奖励</div></div></div>
+            <div class="rgrid">
+              <div data-go="rewards"><img src="assets/rw-coupon.png" alt=""><b>商家现金券</b><em>150–400</em></div>
+              <div data-go="rewards"><img src="assets/rw-charm.png" alt=""><b>金属吊饰</b><em>500</em></div>
+              <div data-go="rewards"><img src="assets/rw-plush.png" alt=""><b>守护者公仔</b><em>800</em></div>
+              <div data-go="rewards"><img src="assets/rw-cap.png" alt=""><b>品牌帽</b><em>800</em></div>
+              <div data-go="rewards"><img src="assets/rw-bottle.png" alt=""><b>新春限定瓶</b><em>1,200</em></div>
+              <div data-go="hub"><img src="assets/poster-3.jpg" alt=""><b>提前解锁剧集</b><em>80</em></div>
+            </div>
+          </div>
+
+          <!-- 会员等级 -->
+          <div class="gsec" id="g-tier">
+            <div class="ghead"><img src="assets/tier-3.png" alt=""><div><div class="caps">MEMBER TIER</div><div class="h1" style="font-size:20px">会员等级</div></div></div>
+            <div class="tiers">
+              <div><img src="assets/tier-1.png" alt=""><b>探索者</b>0 – 999</div>
+              <div><img src="assets/tier-2.png" alt=""><b>守护者</b>1,000+<br>积分 ×1.2</div>
+              <div><img src="assets/tier-3.png" alt=""><b>守护精英</b>3,000+<br>积分 ×1.5</div>
+            </div>
+            <div class="note">会员等级看<b>累计赚到</b>的积分，花掉不会降级。</div>
+          </div>
+
+          <!-- Voucher -->
+          <div class="gsec" id="g-voucher">
+            <div class="ghead"><img src="assets/rw-coupon.png" alt=""><div><div class="caps">VOUCHER</div><div class="h1" style="font-size:20px">Voucher 怎么用</div></div></div>
+            <div class="vflow">
+              <div><img src="assets/rw-coupon.png" alt=""><b>1 · 兑换</b><small>在「礼赠」用积分换券</small></div>
+              <div><span class="eico">🎟️</span><b>2 · 券包</b><small>自动放进「我的券包」</small></div>
+              <div><span class="eico">📱</span><b>3 · 出示</b><small>结账时打开条码</small></div>
+              <div><span class="eico">✅</span><b>4 · 抵扣</b><small>收银扫码直接减</small></div>
+            </div>
+            <div class="note">有效期 30 天 · 每人每月每种券限 2 张 · 过期不退积分</div>
+            <button class="btn ghost" data-go="wallet"><b>看我的券包</b></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="scr" id="game" data-g="H · 5100 Club 玩法" data-t="小游戏：冰川接水" data-own="我们做"
+        data-n="可以真的玩：左右拖动（或用键盘 ← →）让守护者接住 5100 冰川水滴。30 秒一局，分数换积分和经验，每天 3 局。"
+        data-ux="规则一句话说完；结算页直接显示<b>赚到多少积分、守护者涨了多少经验</b>，把小游戏和养成、积分连在一起。">
+        <div class="garena" id="garena">
+          <div class="ghud"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="sc"><svg width="26" height="30" viewBox="0 0 26 32"><use href="#g-drop"/></svg><b id="gscore">0</b><small>今日剩 <span id="gleft">3</span> 局</small></div><div class="tm">⏱ <span id="gtime">30</span>s</div></div>
+          <div class="gbar"><i id="gbar"></i></div>
+          <div class="gcombo" id="gcombo">连击 ×2</div>
+          <div class="gring" id="gring"></div>
+          <img class="gpet" id="gpet" src="assets/st-snow-leopard-1.png" alt="">
+          <svg width="0" height="0" style="position:absolute"><defs>
+            <linearGradient id="gdg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E6FAFF"/><stop offset=".45" stop-color="#7FD3FF"/><stop offset="1" stop-color="#2F63B0"/></linearGradient>
+            <symbol id="g-drop" viewBox="0 0 26 32"><path d="M13 1C13 1 2 14 2 21a11 11 0 0 0 22 0C24 14 13 1 13 1z" fill="url(#gdg)" stroke="#fff" stroke-width="1.6"/><ellipse cx="9" cy="20" rx="2.6" ry="4.2" fill="#fff" opacity=".85"/></symbol>
+            <symbol id="g-cloud" viewBox="0 0 64 48"><path d="M16 34a12 12 0 0 1 1-24 16 16 0 0 1 30 4 10 10 0 0 1 1 20z" fill="#5B6478" stroke="#3B4252" stroke-width="2"/><path d="M33 30l-6 10h6l-4 8 10-12h-6l4-6z" fill="#FFD66B"/><circle cx="24" cy="24" r="2" fill="#fff"/><circle cx="38" cy="24" r="2" fill="#fff"/><path d="M27 30q4-3 8 0" stroke="#fff" stroke-width="2" fill="none"/></symbol>
+          </defs></svg>
+          <div class="gstart" id="gstart">
+            <img class="gp" id="gstartpet" src="assets/st-snow-leopard-1.png" alt="">
+            <div class="caps" style="color:var(--gold-light)">CATCH THE GLACIER DROPS</div>
+            <div class="h1" style="color:#fff">冰川接水</div>
+            <p style="margin:0">左右拖动守护者，接住从雪山落下的冰川水</p>
+            <div class="glegend">
+              <div><svg width="30" height="38" viewBox="0 0 26 32"><use href="#g-drop"/></svg><b>+10</b>冰川水滴</div>
+              <div><img src="assets/rw-bottle.png" alt=""><b>+30</b>5100 瓶</div>
+              <div><svg width="46" height="38" viewBox="0 0 64 48"><use href="#g-cloud"/></svg><b>−20</b>小乌云</div>
+            </div>
+            <p style="font-size:12px;margin:-4px 0 8px">连续接住 5 个有连击 ×2 · 每 10 分 = 1 积分（每局最多 30）</p>
+            <p style="font-size:12px;margin:0 0 12px;color:#FFE3A0"><img src="assets/icons/v-ticket.png" alt="" style="width:28px;vertical-align:middle;margin-right:4px">稀有掉落：金色 Village Grocer RM5 券，偶尔才会出现，接到直接放进券包（每天全场限量）</p>
+            <button class="btn red" id="gplay"><b>开始游戏</b><small>30 秒 · 今日剩 <span id="gleft2">3</span> 局</small></button>
+          </div>
+          <div class="gstart" id="gend" hidden>
+            <div class="gstars" id="gstars">★★★</div>
+            <div class="caps" style="color:var(--gold-light)" id="gendcap">GREAT JOB!</div>
+            <div class="h1" style="color:#fff">得分 <span id="gfinal">0</span></div>
+            <p style="margin:0;font-size:12px">最高连击 <b id="gbest">0</b> · 今日最佳 <b id="gtop">0</b></p>
+            <div class="grare" id="grare"><img src="assets/logos/village-grocer.jpg" alt="Village Grocer" style="height:30px;vertical-align:middle;margin-right:6px;border-radius:4px">稀有掉落！你接到了 Village Grocer RM5 现金券，已放进券包</div>
+            <div class="greward"><div><b id="gpts">+0</b>积分</div><div><b id="gxp">+0</b>守护者经验</div></div>
+            <button class="btn red" id="gagain"><b>再玩一局</b></button>
+            <button class="btn ghost" style="margin-top:10px" data-go="guardian"><b>🍖 用积分喂养守护者</b></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="scr paper" id="wallet" data-g="H · 5100 Club 玩法" data-t="我的券包（Voucher）" data-own="我们做（核销在后台）"
+        data-n="兑换后的 Voucher 都在这里。点开一张就是给收银员扫的条码，写清楚门店、最低消费、有效期。"
+        data-ux="到店结账时<b>一打开就能出示</b>：大条码 + 亮度提示；已用 / 过期的券自动分开。">
+        <div class="bar"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl"><small>MY VOUCHERS</small><b>我的券包</b></div></div>
+        <div class="body">
+          <div class="tabs2"><button class="on" id="vcount">可使用 (2)</button><button>已使用 / 过期</button></div>
+          <div id="vlist"></div>
+          <button class="btn ghost" data-go="rewards" style="margin-top:6px"><b>用积分兑换更多</b></button>
+        </div>
+      </section>
+
+
+      <section class="scr" id="episode" data-g="G · 抽奖与内容" data-t="剧集播放" data-own="我们做页面（内容由内容团队做）"
+        data-n="点任何一集就进到这里：上面播放，下面是剧情简介、看完领积分、下一集。第 1 集用现在的预告片做示意。"
+        data-ux="看完自动出现<b>「领 +20 积分」</b>，把看内容和养成、积分连起来；锁住的集数可以直接用积分解锁。">
+        <div class="epplayer"><video id="epvid" playsinline controls></video><img id="epposter" alt=""><div class="epsoon" id="epsoon" hidden><b>正片制作中</b><span>春节前每周五更新</span></div><button class="ib eback" data-back><svg width="20" height="20"><use href="#back"/></svg></button></div>
+        <div class="body paper" style="padding-top:14px">
+          <span class="caps" id="epno">EPISODE 1</span>
+          <div class="h1" id="eptitle">寻找纯净之源</div>
+          <p class="sub" id="epdesc"></p>
+          <button class="btn red" id="epclaim"><b>看完了 · 领 +20 积分</b><small>WATCH & EARN</small></button>
+          <div class="sec"><div><span class="caps">MORE EPISODES</span><b>下一集</b></div></div>
+          <div class="eps" id="epnext"></div>
+        </div>
+      </section>
+
+
+      <!-- ============ I · 账号 ============ -->
+      <section class="scr paper" id="login" data-g="I · 账号" data-t="登录（手机验证码）" data-own="我们做"
+        data-n="老会员用手机号 + 短信验证码登录，不用记密码。新用户直接点「先体验」做祝福，领奖时再注册。"
+        data-ux="只要两步：输入手机号 → 输入 6 位验证码；验证码可以重发，倒数 60 秒。">
+        <div class="bar"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl"><small>WELCOME BACK</small><b>登录 5100 Club</b></div></div>
+        <div class="body">
+          <div style="text-align:center;margin:10px 0 18px"><img src="assets/logo-navy.png" alt="" style="height:46px;margin:0 auto"><p class="sub" style="margin:10px 0 0">欢迎回来，守护者</p></div>
+          <div class="field"><label>手机号码</label><div style="display:flex;gap:8px"><span style="height:50px;padding:0 12px;border-radius:12px;background:#EDE2CD;display:flex;align-items:center;font-weight:700">+60</span><input value="12-345 6789"></div></div>
+          <div class="field"><label>验证码</label><div style="display:flex;gap:8px"><input value="836214" style="letter-spacing:.3em"><button class="btn ghost" style="width:120px;height:50px" id="otpbtn"><b style="font-size:13px">获取验证码</b></button></div></div>
+          <p style="font-size:11.5px;color:var(--ink-soft);margin:0">登录即表示同意活动条款与隐私政策</p>
+        </div>
+        <div class="foot"><button class="btn red" data-do="login"><b>登录</b><small>LOG IN</small></button><button class="btn text" data-go="register"><b>还不是会员？注册</b></button></div>
+      </section>
+
+      <section class="scr paper" id="profile" data-g="I · 账号" data-t="我的（账号 · 登出）" data-own="我们做"
+        data-n="会员中心：会员卡、积分和等级、我的守护者、券包、抽奖记录、语言、通知、帮助，最下面是登出。"
+        data-ux="登出放在最底部，点了会<b>再确认一次</b>，避免误按；登出后回到扫码落地页。">
+        <div class="bar"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl"><small>MY ACCOUNT</small><b>我的</b></div></div>
+        <div class="body">
+          <div class="mcard"><img class="lg" src="assets/logo-navy.png" alt=""><img class="gd" data-bind="gimg" src="assets/g-snow-leopard.png" alt=""><div><div class="nm">Lim Mei Ling</div><div class="no">+60 12-345 6789</div><div class="no">GUARDIAN NO. 2027 0206 · <span data-bind="tiername">探索者</span></div></div></div>
+          <div class="pstats">
+            <div data-go="rewards"><b data-bind="points">100</b><span>积分</span></div>
+            <div data-go="draw"><b data-bind="entries">1</b><span>抽奖机会</span></div>
+            <div data-go="guardian"><b data-bind="lv">Lv.1</b><span>守护者</span></div>
+          </div>
+          <div class="plist">
+            <button data-go="guardian"><span>🐾</span>我的守护者<em data-bind="gname">雪豹</em></button>
+            <button data-go="wallet"><span>🎟️</span>我的券包<em>2 张可用</em></button>
+            <button data-go="draw"><span>📱</span>抽奖记录</button>
+            <button data-go="memories"><span>📷</span>我的回忆卡</button>
+            <button data-go="guide"><span>❓</span>玩法与积分规则</button>
+          </div>
+          <div class="plist">
+            <button data-toast="语言：中文 / English / Bahasa（Demo）"><span>🌐</span>语言<em>中文</em></button>
+            <button data-toast="已开启通知（Demo）"><span>🔔</span>通知<em>已开启</em></button>
+            <button data-toast="个人资料编辑（Demo）"><span>👤</span>个人资料</button>
+            <button data-toast="条款与隐私政策（Demo）"><span>📄</span>条款与隐私政策</button>
+            <button data-toast="WhatsApp 客服：+60 3-1234 5100（Demo）"><span>💬</span>联系客服</button>
+          </div>
+          <button class="btn ghost logout" data-modal="m-logout"><b style="color:var(--lucky-red)">登出</b></button>
+          <p style="text-align:center;font-size:11px;color:var(--ink-soft)">5100 Club · v0.3 Demo</p>
+        </div>
+      </section>
+
+      <div class="modal" id="m-bless">
+        <div class="sheet bless">
+          <div class="grab"></div><button class="x" data-close>✕</button>
+          <div class="vid"><video id="blessvid" src="assets/sample-blessing.mp4" poster="assets/sample-poster.jpg" muted loop playsinline preload="auto"></video><span class="badge chip red">AI 新年祝福</span><button class="mute" id="mute">🔇</button></div>
+          <h2>拍一张照片<br>让你<span style="color:var(--red)">亲口</span>送出新年祝福</h2>
+          <div class="steps3"><span><b>1</b> 选模板</span>·<span><b>2</b> 拍照</span>·<span><b>3</b> 1 分钟生成</span></div>
+          <button class="btn red" data-close data-go="tpl"><b>立即制作我的祝福</b><small>分享再送 1 次 iPhone 抽奖</small></button>
+          <button class="btn text" data-close><b>先看看活动</b></button>
+        </div>
+      </div>
+
+      <div class="modal" id="m-invite">
+        <div class="sheet">
+          <button class="x" data-close style="top:12px;right:14px;background:rgba(20,48,107,.08);color:var(--glacier-navy)">✕</button>
+          <div style="text-align:center"><img src="assets/icons/friends.png" alt="" style="width:80px;margin:0 auto"></div>
+          <div class="caps" style="text-align:center">INVITE FRIENDS</div>
+          <div class="h1" style="font-size:21px;text-align:center">邀请好友加入 5100 Club</div>
+          <p class="sub" style="text-align:center;margin:6px 0 0">好友用你的邀请码注册：你 +200 积分，好友 +50 积分<br>本月已邀请 <b id="invn">0</b> / 5 人</p>
+          <div class="invcode">ML5100 <button data-toast="已复制邀请码">复制</button></div>
+          <div class="row"><button class="btn red" data-do="invite"><b>分享到 WhatsApp</b></button><button class="btn ghost" data-do="invite"><b>复制邀请链接</b></button></div>
+        </div>
+      </div>
+
+      <div class="modal center-modal" id="m-logout">
+        <div class="sheet" style="text-align:center">
+          <div class="h1" style="font-size:20px;margin-top:6px">确定要登出吗？</div>
+          <p class="sub">你的守护者、积分和券都会保留，下次用手机号登录就能继续。</p>
+          <div class="row"><button class="btn ghost" data-close><b>取消</b></button><button class="btn red" data-close data-do="logout"><b>登出</b></button></div>
+        </div>
+      </div>
+
+      <div class="modal center-modal" id="m-info">
+        <div class="sheet" style="text-align:center">
+          <button class="x" data-close style="top:12px;right:14px;background:rgba(20,48,107,.08);color:var(--glacier-navy)">✕</button>
+          <img id="infoimg" alt="" style="max-height:150px;width:auto;margin:6px auto 8px;border-radius:14px">
+          <div class="caps" id="infocaps"></div>
+          <div class="h1" id="infotitle" style="font-size:21px"></div>
+          <p class="sub" id="infotext" style="margin:6px 0 14px"></p>
+          <button class="btn red" id="infobtn" data-close><b>好的</b></button>
+        </div>
+      </div>
+
+      <div class="modal" id="m-gplay">
+        <div class="sheet" style="max-height:88%;overflow-y:auto">
+          <div class="grab"></div><button class="x" data-close style="top:12px;right:14px;background:rgba(20,48,107,.08);color:var(--glacier-navy)">✕</button>
+          <div class="caps">HOW TO RAISE YOUR GUARDIAN</div>
+          <div class="h1" style="font-size:21px">守护者怎么养</div>
+          <div class="gp">
+            <div><span>1</span><p><b>用积分照顾它</b>喂食 −10、照顾 −5、玩耍 −8 积分；休息免费（每天 1 次）。</p></div>
+            <div><span>2</span><p><b>心情 & 羁绊</b>照顾会涨心情和羁绊；心情 ≥ 80 时你赚积分 ×1.2。超过 24 小时没照顾心情会掉，但守护者不会离开。</p></div>
+            <div><span>3</span><p><b>经验满 100 升 1 级</b>喂食 +20、玩耍 +25、冰川水 +50（扫 5100 瓶身码获得）。</p></div>
+            <div><span>4</span><p><b>升级会进化、送积分</b></p></div>
+          </div>
+          <div class="evo">
+            <div><img data-evo="1" src="assets/st-snow-leopard-1.png" alt=""><b>Lv.1</b>幼崽</div><i>→</i>
+            <div><img data-evo="2" src="assets/st-snow-leopard-2.png" alt=""><b>+50</b>探索者</div><i>→</i>
+            <div><img data-evo="3" src="assets/st-snow-leopard-3.png" alt=""><b>+100</b>守护者</div><i>→</i>
+            <div><img data-evo="4" src="assets/st-snow-leopard-4.png" alt=""><b>+300</b>传说</div>
+          </div>
+          <div class="gp">
+            <div><span>5</span><p><b>小游戏 · 冰川接水</b>每天 3 局，接到的水滴换积分和经验。</p></div>
+            <div><span>6</span><p><b>Lv.2 解锁探索之旅</b>走到每一站得回忆卡和徽章。</p></div>
+          </div>
+          <button class="btn red" data-close><b>开始照顾</b><small>LET'S GO</small></button>
+        </div>
+      </div>
+
+      <div class="modal" id="m-stages">
+        <div class="sheet">
+          <div class="grab"></div><button class="x" data-close style="top:12px;right:14px;background:rgba(20,48,107,.08);color:var(--glacier-navy)">✕</button>
+          <div class="caps">GROWTH STAGES</div>
+          <div class="h1" style="font-size:22px">成长路线</div>
+          <div class="stages" id="stages">
+            <div class="stg on"><img src="assets/st-snow-leopard-1.png" alt=""><b>CUB</b><span>幼崽 · 0–7 天</span></div>
+            <div class="stg"><img src="assets/st-snow-leopard-2.png" alt=""><b>EXPLORER</b><span>探索者 · 8–30 天</span></div>
+            <div class="stg"><img src="assets/st-snow-leopard-3.png" alt=""><b>GUARDIAN</b><span>守护者 · 31–90 天</span></div>
+            <div class="stg"><img src="assets/st-snow-leopard-4.png" alt=""><b>LEGEND</b><span>传说 · 90 天+</span></div>
+          </div>
+          <p class="sub" style="margin:12px 0">每天照顾守护者就能涨经验；升到 Lv.2 解锁喜马拉雅探索之旅。</p>
+          <button class="btn red" data-close data-go="journey"><b>去探索之旅</b><small>EXPLORE</small></button>
+          <button class="btn ghost" style="margin-top:8px" data-close data-go="guardian"><b>继续喂养</b></button>
+        </div>
+      </div>
+
+      <div class="modal center-modal" id="m-levelup">
+        <div class="sheet lvup">
+          <div class="caps">LEVEL UP!</div>
+          <div class="big brushgold">升级啦！</div>
+          <div class="lv" id="lvnum">Lv.2</div>
+          <img id="lvimg" src="assets/stage-2-explorer.png" alt="">
+          <video id="lvvid" src="assets/video/v-levelup.mp4" poster="assets/video/v-levelup.jpg" muted playsinline style="display:none;width:180px;height:240px;object-fit:cover;object-position:center 85%;border-radius:18px;margin:8px auto 0;border:2px solid var(--gold-light)"></video>
+          <div style="font:700 15px var(--f-serif);margin:10px 0 6px" id="lvstage">成为「探索者」！</div>
+          <div class="stat"><span>勇气 Courage</span><b>+8</b></div>
+          <div class="stat"><span>智慧 Intelligence</span><b>+6</b></div>
+          <div class="stat" style="border:0"><span>适应力 Adaptability</span><b>+5</b></div>
+          <button class="btn red" style="margin-top:10px" data-close data-go="journey"><b>解锁探索之旅</b><small>CONTINUE</small></button>
+          <button class="btn ghost" style="margin-top:8px" data-close><b>继续喂养</b></button>
+        </div>
+      </div>
+    </div></div>
+  </main>
+
+  <aside class="notes">
+    <div class="k" id="nk"></div>
+    <h3 id="nt"></h3>
+    <span class="chip gold" id="no"></span>
+    <p id="nn"></p>
+    <div class="ux"><b>UX：</b><span id="nux"></span></div>
+    <div class="pager"><button id="prev">← 上一页</button><button id="next">下一页 →</button></div>
+    <p style="margin-top:24px;font-size:12px">手机直接打开就是全屏 App；键盘 ← → 可以翻页。</p>
+  </aside>
+</div>
+
+<script>
+const G = [
+  { id: "snow-leopard", cn: "雪豹", en: "SNOW LEOPARD", trait: "勇气 · 守护" },
+  { id: "yak", cn: "牦牛", en: "YAK", trait: "坚毅 · 力量" },
+  { id: "crane", cn: "黑颈鹤", en: "BLACK-NECKED CRANE", trait: "纯净 · 希望" },
+  { id: "tibetan-fox", cn: "藏狐", en: "TIBETAN FOX", trait: "灵动 · 智慧" },
+  { id: "antelope", cn: "藏羚羊", en: "TIBETAN ANTELOPE", trait: "优雅 · 新生", limited: true },
+  { id: "kiang", cn: "藏野驴", en: "KIANG", trait: "自由 · 探索" },
+];
+const STAGES = ["幼崽", "探索者", "守护者", "传说守护者"];
+const STAGE_FILES = ["stage-1-cub", "stage-2-explorer", "stage-3-guardian", "stage-4-legend"];
+const TIERS = [{ n: "探索者", min: 0, next: 1000 }, { n: "守护者", min: 1000, next: 3000 }, { n: "守护精英", min: 3000, next: Infinity }];
+const REWARDS = [
+  ["rw-charm", "守护者金属吊饰", "Metal Charm", 500],
+  ["rw-plush", "守护者公仔", "Mascot Plush", 800],
+  ["rw-cap", "5100 品牌帽", "Merchandise", 800],
+  ["rw-bottle", "新春限定瓶", "Limited Bottle", 1200],
+];
+const MERCH = [
+  { id: "vg", ic: "v-basket", logo: "logos/village-grocer.jpg", m: "Village Grocer", en: "SUPERMARKET", v: "RM10", c: "满 RM50 可用", p: 300, col: "#2F6B45" },
+  { id: "jg", ic: "v-bag", logo: "logos/jaya-grocer.jpg", m: "Jaya Grocer", en: "SUPERMARKET", v: "RM10", c: "满 RM50 可用", p: 300, col: "#9E2A2F" },
+  { id: "hkl", ic: "v-food", logo: "logos/hai-kah-lang.png", m: "海脚人 Hai Kah Lang", en: "SEAFOOD NOODLES", v: "RM15", c: "满 RM60 可用 · 全马分店", p: 400, col: "#024771" },
+  { id: "chagee", ic: "v-coffee", logo: "logos/chagee.jpg", m: "CHAGEE 霸王茶姬", en: "TEA", v: "RM5", c: "任意饮品可用", p: 150, col: "#C8202A" },
+  { id: "5100", ic: "scan", logo: "logo-white.png", m: "5100", en: "TIBET SPRING", v: "RM5", c: "购买任意 5100 产品", p: 200, col: "#14306B" },
+];
+const MAX_ENTRIES = 5;
+const MIS = [
+  { grp: "每日任务", sub: "每天 0 点刷新", items: [
+    { id: "care", ic: "feed", t: "完成今日照顾", d: "喂食 + 玩耍 各 1 次", rw: ["+5 积分"], max: 2, go: "guardian", pts: 5 },
+    { id: "game", ic: "game", t: "玩冰川接水", d: "每局最多 +30 积分", rw: ["最多 +90 积分"], max: 3, go: "game" },
+    { id: "bless", ic: "share", t: "分享 AI 新年祝福", d: "带 #5100新年好运 发布", rw: ["+30 积分"], max: 1, go: "tpl" },
+  ]},
+  { grp: "常驻任务", sub: "随时可以做", items: [
+    { id: "scan", ic: "scan", t: "扫瓶身码 · 再买一瓶", d: "每瓶 1 次", rw: ["+50 积分", "+1 冰川水"], go: "scan", repeat: true },
+    { id: "drama", ic: "drama", t: "看一集「守护者的冒险」", d: "每集 1 次", rw: ["+20 积分", "+10 经验"], go: "hub", repeat: true },
+    { id: "brand", ic: "book", t: "了解 5100 水源知识", d: "读完品牌故事", rw: ["+50 积分"], max: 1, go: "brandz" },
+    { id: "invite", ic: "friends", t: "邀请好友注册", d: "每月最多 5 人，好友也得 +50", rw: ["+200 积分 / 人"], max: 5, modal: "m-invite" },
+  ]},
+  { grp: "新春季度挑战", sub: "活动期内 1 次", items: [
+    { id: "season", ic: "trophy", t: "连续签到 7 天", d: "新春季度挑战", rw: ["+300 积分", "+1 抽奖"], r: true, max: 7, prog: () => state.ck, pts: 300, entry: true },
+    { id: "eco", ic: "grow", t: "环保守护：回收 5 个空瓶", d: "拍照上传回收点照片", rw: ["+80 积分"], max: 5, pts: 80 },
+  ]},
+];
+const state = { vouchers: [
+  { m: "Village Grocer", v: "RM10 现金券", c: "满 RM50 可用", exp: "2027.03.08", code: "5100-VG-8K2Q-77A1", col: "#2F6B45", ic: "v-basket", logo: "logos/village-grocer.jpg" },
+  { m: "5100", v: "RM5 购买折扣券", c: "任意 5100 产品", exp: "2027.03.01", code: "5100-RM5-3XQ9-1C20", col: "#14306B", ic: "scan", logo: "logo-white.png" },
+], mcount: {}, wishText: "新年快乐！祝你身体健康，万事如意！", ck: 3, ckToday: false, mp: { care: 0, game: 0, bless: 0, brand: 0, invite: 0, eco: 2 }, claimed: {}, water: 0, entries: 0, verified: false, shared: false, taskEntry: false, member: false, points: 100, guardian: 0, stage: 0, lv: 1, xp: 20, mood: 60, bond: 40, spot: 0, hist: [], redeemed: {} };
+let cur = "landing";
+const $ = id => document.getElementById(id);
+const screens = [...document.querySelectorAll(".scr")];
+const order = screens.map(s => s.id);
+
+let lastG = "";
+screens.forEach((s, i) => {
+  if (s.dataset.g !== lastG) { lastG = s.dataset.g; $("navlist").insertAdjacentHTML("beforeend", `<div class="grp">${lastG}</div>`); }
+  $("navlist").insertAdjacentHTML("beforeend", `<button class="nav" data-go="${s.id}"><i>${String(i + 1).padStart(2, "0")}</i>${s.dataset.t}</button>`);
+});
+const TABS = [["home", "首页", "i-home"], ["guardian", "守护者", "i-paw"], ["tpl", "祝福", "i-film"], ["missions", "任务", "i-flag"], ["rewards", "礼赠", "i-gift"]];
+document.querySelectorAll("nav.tabs").forEach(n => {
+  n.innerHTML = TABS.map(([id, l, ic]) => id === "tpl"
+    ? `<button class="mid" data-go="tpl"><span><svg><use href="#${ic}"/></svg></span>${l}</button>`
+    : `<button data-go="${id}" class="${n.dataset.tab === id ? "on" : ""}"><svg><use href="#${ic}"/></svg>${l}</button>`).join("");
+});
+$("gcar").innerHTML = G.map((g, i) => `<button class="gc ${i === 0 ? "on" : ""}" data-gi="${i}">${g.limited ? '<span class="chip red seal">羊年限定</span>' : ""}<div class="arch"><video src="assets/video/v-${g.id}.mp4" poster="assets/video/v-${g.id}.jpg" muted loop playsinline preload="metadata"></video></div><b>${g.en}</b><em>${g.cn}</em><span>${g.trait}</span></button>`).join("");
+$("chapters").innerHTML = [["纯净之源", "海拔 5100 米的冰川矿泉水"], ["自然的守护者", "六位守护者守护高原的平衡"], ["守护的旅程", "穿越雪山河谷，守护每一滴水"], ["更明亮的明天", "以自然之力，带来更明亮的未来"], ["与世界共享", "把高原的纯净分享给全世界"], ["致敬未来", "守护自然，守护更好的明天"]]
+  .map(([t, d], i) => `<div class="chap"><img src="assets/story-${i + 1}.jpg" alt=""><em>0${i + 1}</em><b>${t}</b><span>${d}</span></div>`).join("");
+
+const tierOf = p => TIERS.reduce((t, x, i) => p >= x.min ? i : t, 0);
+// Demo 只为雪豹做了 4 个成长阶段，其他守护者暂时用同一张全身图
+const HAVE_VID = new Set(["c-antelope-1", "c-crane-1", "c-crane-2", "c-crane-3", "c-crane-4", "c-snow-leopard-1", "c-snow-leopard-2", "c-snow-leopard-3", "c-snow-leopard-4", "c-tibetan-fox-1", "c-tibetan-fox-2", "c-tibetan-fox-3", "c-yak-1", "c-yak-2", "c-yak-3", "c-yak-4"]);  // 已生成的居中养成视频，没有的先显示成长图
+const stageImg = () => `assets/st-${G[state.guardian].id}-${state.stage + 1}.png`;
+function addEntry() { if (state.entries < MAX_ENTRIES) state.entries += 1; }
+
+function setLed(id, done, goTo, todoText) {
+  const el = $(id), em = el.querySelector("em");
+  el.className = "led" + (done ? "" : " todo"); em.textContent = done ? "+1" : todoText; em.dataset.go = done ? "" : goTo;
+}
+function renderMis() {
+  const prog = it => it.prog ? it.prog() : (state.mp[it.id] || 0);
+  $("mislist").innerHTML = MIS.map(g => `<div class="misgrp"><b>${g.grp}</b><span>${g.sub}</span></div><div class="card" style="padding:2px 14px">` + g.items.map(it => {
+    const p = Math.min(prog(it), it.max || 0), full = it.max && p >= it.max, got = state.claimed[it.id];
+    const btn = got || full && it.pts === undefined ? `<button class="done" disabled>已完成</button>` : full ? `<button class="claim" data-claim="${it.id}">领取</button>` : `<button ${it.go ? `data-go="${it.go}"` : it.modal ? `data-modal="${it.modal}"` : `data-toast="Demo：上传照片后由后台审核"`}>去完成</button>`;
+    const pg = it.max ? `<div class="pg"><i style="--w:${p / it.max * 100}%"></i>${p}/${it.max}</div>` : "";
+    return `<div class="mis"><div class="ic"><img src="assets/icons/${it.ic}.png" alt=""></div><div style="flex:1;min-width:0"><b>${it.t}</b><small>${it.d}</small><div class="rw">${it.rw.map(r => `<em class="${r.includes("抽奖") ? "r" : ""}">${r}</em>`).join("")}</div>${pg}</div>${btn}</div>`;
+  }).join("") + `</div>`).join("");
+  $("ckdays").textContent = state.ck;
+  $("days").innerHTML = [1,2,3,4,5,6,7].map(d => `<div class="${d <= state.ck ? "on" : ""} ${d === 7 ? "big" : ""}"><b>${d === 7 ? "+100" : "+10"}</b>${d <= state.ck ? "✓" : "第" + d + "天"}</div>`).join("");
+  const b = $("ckbtn"); b.disabled = state.ckToday; b.textContent = state.ckToday ? "今日已签" : "签到";
+  $("tix").innerHTML = [0,1,2,3,4].map(i => `<div class="${i < state.entries ? "on" : ""}">${i < state.entries ? "No." + (i + 1) : "待获得"}</div>`).join("");
+  $("invn").textContent = state.mp.invite;
+}
+
+function renderWallet() {
+  const vl = $("vlist"); if (!vl) return;
+  vl.innerHTML = state.vouchers.map((v, i) => `<div class="vcard${i ? " mini" : ""}" data-vi="${i}"><div class="vtop"><div><small>${v.m.toUpperCase()}</small><b>${v.v}${v.rare ? '<span class="tagr">小游戏稀有掉落</span>' : ""}</b><span>${v.c} · 有效期至 ${v.exp}</span></div>${v.logo ? `<div class="vb lg" style="background:${v.m === "5100" ? v.col : "#fff"}"><img src="assets/${v.logo}" alt="${v.m}"></div>` : `<div class="vb" style="background:${v.col}"><img src="assets/icons/${v.ic || "v-voucher"}.png" alt=""><span>${v.m}</span></div>`}</div>${i ? "" : `<div class="vcode"><div class="barcode"></div><b>${v.code}</b><small>结账时出示给收银员扫码 · 请调高屏幕亮度</small></div>`}</div>`).join("");
+  $("vcount").textContent = `可使用 (${state.vouchers.length})`;
+}
+function addVoucher(v) {
+  const exp = "2027.03.15";  // Demo：活动期内兑换，有效期 30 天
+  const code = "5100-" + v.tag + "-" + Math.random().toString(36).slice(2, 6).toUpperCase() + "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
+  state.vouchers.unshift({ ...v, exp, code });
+}
+
+function render() {
+  const g = G[state.guardian], t = tierOf(state.points), T = TIERS[t];
+  renderMis();
+  const bind = (k, v, attr) => document.querySelectorAll(`[data-bind="${k}"]`).forEach(e => attr ? e[attr] = v : e.textContent = v);
+  bind("entries", state.entries); bind("points", state.points.toLocaleString());
+  bind("gname", g.cn); bind("gimg", `assets/g-${g.id}.png`, "src");
+  bind("stagename", STAGES[state.stage]); bind("lv", "Lv." + state.lv); bind("xp", `${state.xp}/100`);
+  bind("moodtxt", state.mood); bind("bondtxt", state.bond);
+  bind("tiername", T.n); bind("tierimg", `assets/tier-${t + 1}.png`, "src");
+  bind("tiernext", T.next === Infinity ? "已是最高等级" : `再 ${(T.next - state.points).toLocaleString()} Points 升级为${TIERS[t + 1].n}`);
+  bind("stageimg", stageImg(), "src"); $("petimg").src = stageImg();
+  // 有守护者视频就在养成页播视频；雪豹的幼崽 / 探索者阶段仍用成长图
+  // 每个成长阶段都有视频：雪豹用 4 个阶段各自的视频（守护者阶段用成年雪豹），其他守护者用各自的视频
+  // 养成页：每只守护者每个阶段一条「居中大图」视频 c-<id>-<阶段>
+  const vname = `c-${g.id}-${state.stage + 1}`;
+  const useVid = HAVE_VID.has(vname), pv = $("petv"), want = `assets/video/${vname}.mp4`;
+  const z1 = state.stage === 0, z2 = state.stage === 1;
+  document.querySelectorAll("#stages .stg img").forEach((im, i) => im.src = `assets/st-${g.id}-${i + 1}.png`);
+
+  document.querySelector("#guardian .scene").classList.toggle("hasv", useVid);
+  if (useVid && !pv.src.endsWith(want)) { pv.src = want; pv.poster = `assets/video/${vname}.jpg`; }
+  if (useVid && cur === "guardian") pv.play().catch(() => {}); else pv.pause();
+
+  // 首页六位守护者：自己的在正中间（当前成长阶段），其他五位左右两边
+  const others = G.map((x, i) => i).filter(i => i !== state.guardian);
+  const slots = [{l:-14,w:100,b:26},{l:58,w:92,b:44},{r:58,w:92,b:44},{r:-14,w:100,b:26},{l:20,w:84,b:96}];
+  const pos = [[0,{left:"-18px",width:"118px",bottom:"10px"}],[1,{left:"48px",width:"104px",bottom:"62px"}],[2,{right:"48px",width:"104px",bottom:"62px"}],[3,{right:"-18px",width:"118px",bottom:"10px"}],[4,{left:"50%",marginLeft:"-46px",width:"92px",bottom:"150px"}]];
+  $("hcast").innerHTML = others.map((gi, k) => { const p = pos[k][1]; return `<img src="assets/g-${G[gi].id}.png" alt="" style="${Object.entries(p).map(([a,b]) => a.replace(/[A-Z]/g, m => "-" + m.toLowerCase()) + ":" + b).join(";")};animation-delay:${k * .4}s">`; }).join("")
+    + `<img class="me" src="${stageImg()}" alt="" style="left:50%;margin-left:-${[85,90,95,100][state.stage]}px;width:${[170,180,190,200][state.stage]}px;bottom:0"><span class="metag">我的${G[state.guardian].cn} · ${STAGES[state.stage]}</span>`;
+  // 首页一直播放守护者视频
+  const hv = $("homev");
+  if (!hv.src.endsWith(want)) { hv.src = want; hv.poster = `assets/video/${vname}.jpg`; }
+  if (cur === "home") hv.play().catch(() => {}); else hv.pause();
+  $("petimg").style.width = [190, 220, 240, 270][state.stage] + "px";
+  $("xpbar").style.width = state.xp + "%"; $("mood").style.width = state.mood + "%"; $("bond").style.width = state.bond + "%";
+  const span = (T.next === Infinity ? T.min + 1 : T.next) - T.min;
+  $("tierbar").style.width = Math.min(100, (state.points - T.min) / span * 100) + "%";
+  document.querySelectorAll("#stages .stg").forEach((s, i) => { s.className = "stg" + (i < state.stage ? " done" : i === state.stage ? " on" : ""); });
+  document.querySelectorAll(".tiers [data-tier]").forEach(d => d.classList.toggle("on", +d.dataset.tier === t));
+  setLed("led-buy", state.verified, "verify", "去验证");
+  setLed("led-share", state.shared, "tpl", "去分享");
+  setLed("led-task", state.taskEntry, "missions", "去完成");
+  $("mvlist").innerHTML = MERCH.map(x => {
+    const n = state.mcount[x.id] || 0, can = state.points >= x.p, lim = n >= 2;
+    return `<div class="mv" data-mv="${x.id}">${x.logo ? `<div class="brand logo${x.id === "5100" ? " dark" : ""}" style="background:${x.id === "5100" ? x.col : "#fff"}"><img src="assets/${x.logo}" alt="${x.m}"></div>` : `<div class="brand" style="background:${x.col}"><div><img src="assets/icons/${x.ic}.png" alt="">${x.m}<small>${x.en}</small></div></div>`}<div class="info"><b>${x.v} <span style="display:inline;font:500 12px var(--f-sans)">现金券</span></b><span>${x.c}</span><em>${x.p} 积分</em></div><div class="mact"><button data-mredeem="${x.id}" ${lim || !can ? "disabled" : ""}>${lim ? "本月已兑 2 张" : can ? "兑换" : "还差 " + (x.p - state.points)}</button></div></div>`;
+  }).join("");
+  renderWallet();
+  $("rwlist").innerHTML = REWARDS.map(([img, n, s, p]) => {
+    const got = state.redeemed[img], can = state.points >= p;
+    return `<div class="rwi"><div class="im"><img src="assets/${img}.png" alt=""></div><b>${n}</b><span>${p.toLocaleString()} pts</span><div style="font-size:11px;color:var(--ink-soft)">${s}</div><button data-redeem="${img}" ${got || !can ? "disabled" : ""}>${got ? "已兑换" : can ? "兑换" : "还差 " + (p - state.points)}</button></div>`;
+  }).join("");
+  if (typeof wireRewards === "function") wireRewards();
+  const hungry = state.mood < 70;
+  $("bubble").textContent = hungry ? "肚子有点饿…" : state.bond >= 80 ? "最喜欢你了！" : "今天好开心～";
+
+}
+
+function go(id, push = true) {
+  if (!id || !$(id)) return;
+  // 剧集页是详情页，内容由 openEp() 注入。从左侧导航或左右键直接进来时先补上第 1 集，
+  // 否则会看到一个没有片源的空播放器。
+  if (id === "episode" && state.epCur == null) return openEp(0);
+  if (push && cur !== id) state.hist.push(cur);
+  cur = id;
+  screens.forEach(s => s.classList.toggle("on", s.id === id));
+  const s = $(id); s.querySelectorAll(".body").forEach(b => b.scrollTop = 0);
+  document.querySelectorAll(".nav").forEach(n => n.classList.toggle("on", n.dataset.go === id));
+  $("nk").textContent = s.dataset.g; $("nt").textContent = s.dataset.t; $("no").textContent = s.dataset.own;
+  $("nn").textContent = s.dataset.n; $("nux").innerHTML = s.dataset.ux || "";
+  if (id === "gen") runGen();
+  if (id !== "game" && GAME.running) GAME.stop();
+  if (id === "game" && !GAME.running) { $("gstartpet").src = stageImg(); $("gpet").src = stageImg(); }
+  if (id !== "journey" && typeof SEL !== "undefined" && SEL >= 0) zoomSpot(-1);
+  if (id === "game") { $("gstart").hidden = false; $("gend").hidden = true; $("gpet").src = stageImg(); }
+  if (id === "guide") document.querySelectorAll("[data-evo]").forEach(im => im.src = `assets/st-${G[state.guardian].id}-${im.dataset.evo}.png`);
+  if (id === "pick") { const v = document.querySelector(".gc.on video"); v && v.play().catch(() => {}); }
+  if (id !== "result") { $("vid").pause(); $("vplay").style.display = ""; }
+  render();
+  try { history.replaceState(null, "", "#" + id); } catch (e) {}
+}
+function openModal(id) { $(id).classList.add("on"); if (id === "m-gplay" || id === "m-stages") document.querySelectorAll(`#${id} [data-evo]`).forEach(im => im.src = `assets/st-${G[state.guardian].id}-${im.dataset.evo}.png`); if (id === "m-bless") { const v = $("blessvid"); v.currentTime = 0; v.play().catch(() => {}); } }
+function closeModals() { document.querySelectorAll(".modal").forEach(m => m.classList.remove("on")); $("blessvid").pause(); }
+function toast(t) { const el = $("toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 1800); }
+function pop(t) {
+  const sc = document.querySelector("#guardian .scene"), p = document.createElement("div");
+  p.className = "pop"; p.textContent = t; sc.appendChild(p); setTimeout(() => p.remove(), 1000);
+  const img = $("petimg"); img.classList.remove("yay"); void img.offsetWidth; img.classList.add("yay");
+  const pv = $("petv"); pv.classList.remove("pulse"); void pv.offsetWidth; pv.classList.add("pulse");
+}
+
+let genTimer;
+function runGen() {
+  clearInterval(genTimer); let p = 0;
+  const steps = document.querySelectorAll("#gen [data-step]"); steps.forEach(s => s.classList.remove("ok"));
+  genTimer = setInterval(() => {
+    p = Math.min(100, p + 2);
+    $("ringbar").style.strokeDashoffset = 289 - 289 * p / 100; $("pct").textContent = p + "%";
+    steps.forEach((s, i) => s.classList.toggle("ok", p > [20, 60, 90][i]));
+    if (p >= 100) { clearInterval(genTimer); setTimeout(() => cur === "gen" && go("result"), 500); }
+  }, 70);
+}
+
+// [提示, 经验, 心情, 羁绊, 积分花费]
+const CARE = { feed: ["好吃！", 20, 8, 4, 10], care: ["好舒服～", 10, 6, 10, 5], play: ["好好玩！", 25, 12, 6, 8], rest: ["睡饱了", 15, 4, 2, 0] };
+const LV_REWARD = { 2: 50, 3: 100, 4: 300 };
+const actions = {
+  verify() { if (!state.verified) { state.verified = true; addEntry(); } state.member = true; },
+  share() {
+    if (!state.shared) { state.shared = true; addEntry(); state.points += 30; state.mp.bless = 1; state.claimed.bless = true; toast("🧧 分享成功，抽奖机会 +1"); }
+    setTimeout(() => go(state.member ? "draw" : "register"), 700);  // 还没注册的用户：分享后去注册领奖
+  },
+  adopt() { toast(`你领养了${G[state.guardian].cn}！`); go("guardian"); },
+  explore() {
+    if (state.lv < 2) return toast("守护者升到 Lv.2 才能出发哦，先去照顾它吧");
+    if (state.spot >= 1) return go("memories");
+    state.spot = 1; const pin = document.querySelector('#journey [data-spot="1"]');
+    $("me").style.left = pin.style.left; $("me").style.top = pin.style.top;
+    setTimeout(() => { pin.classList.add("done"); pin.querySelector("span").textContent = "✓"; toast("到达冰川洞！获得一张新的回忆"); setTimeout(() => go("memories"), 900); }, 1000);
+  },
+  makewish() {
+    const custom = $("wishcustom").classList.contains("on");
+    let txt = custom ? $("wishtxt").value.trim() : document.querySelector(".wish.on:not(.custom)")?.textContent.trim();
+    if (custom) {
+      const lim = wishLimit();
+      if (!txt) return toast("先写一句你想说的祝福");
+      if (txt.length > lim) return toast(`太长了，最多 ${lim} 个字`);
+      if (/(死|滚蛋|fuck|shit|bodoh)/i.test(txt)) return toast("这句有不适合的字词，换一句吧");
+    }
+    state.wishText = txt; $("subt").textContent = txt; go("gen");
+  },
+  mapout() { zoomSpot(-1); },
+  checkin() {
+    if (state.ckToday) return; state.ckToday = true; state.ck = Math.min(7, state.ck + 1);
+    const bonus = state.ck === 7 ? 100 : 0; state.points += 10 + bonus; state.xp = Math.min(100, state.xp + 10);
+    toast(bonus ? "签到 +10，连续 7 天额外 +100！" : "签到成功 +10 积分 · 守护者经验 +10"); render();
+  },
+  scan() {
+    $("scanstep1").hidden = true; $("scanstep2").hidden = false; $("scanfoot1").hidden = true; $("scanfoot2").hidden = false;
+    state.points += 50; state.water++; toast("+50 积分 · 冰川水 +1"); render();
+  },
+  scanagain() { $("scanstep1").hidden = false; $("scanstep2").hidden = true; $("scanfoot1").hidden = false; $("scanfoot2").hidden = true; },
+  usewater() {
+    if (state.water < 1) return toast("先扫一瓶 5100 获得冰川水");
+    state.water--; state.mood = 100; state.xp = Math.min(99, state.xp + 50); actions.scanagain(); go("guardian"); render();
+    setTimeout(() => pop("💧 冰川水！心情满满 +50 XP"), 300);
+  },
+  invite() {
+    if (state.mp.invite >= 5) return toast("本月已邀请 5 人（上限）");
+    state.mp.invite++; state.points += 200; closeModals(); toast("Demo：好友已注册，+200 积分"); render();
+  },
+  drawmore() {
+    if (!state.verified) return go("verify");
+    if (!state.shared) return go("tpl");
+    if (!state.taskEntry) return go("missions");
+    go("verify"); toast("再买一盒 5100，验证后 +1 次机会");
+  },
+  spotgo() {
+    const i = SEL;
+    if (i <= state.spot) return go("memories");
+    if (i === state.spot + 1) { zoomSpot(-1); return setTimeout(() => actions.explore(), 500); }
+    zoomSpot(-1); go("guardian");
+  },
+  login() { state.member = true; toast("登录成功，欢迎回来"); setTimeout(() => go("home"), 400); },
+  logout() { state.member = false; state.hist = []; toast("已登出"); setTimeout(() => { go("landing", false); }, 400); },
+  readbrand() { if (!state.readBrand) { state.readBrand = true; state.points += 50; state.mp.brand = 1; state.claimed.brand = true; toast("+50 Points"); render(); } setTimeout(() => go("missions"), 600); },
+};
+
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-go],[data-back],[data-do],[data-toast],[data-seg],[data-gi],[data-care],[data-mis],[data-claim],[data-redeem],[data-modal],[data-close],[data-spot],.tpl,.wish,.seg button,#vplay,#vid,#mute");
+  if (!t || t.disabled) return;
+  if (t.id === "vplay" || t.id === "vid") { const v = $("vid"); if (v.paused) { v.play(); $("vplay").style.display = "none"; } else { v.pause(); $("vplay").style.display = ""; } return; }
+  if (t.id === "mute") { const v = $("blessvid"); v.muted = !v.muted; t.textContent = v.muted ? "🔇" : "🔊"; return; }
+  if (t.dataset.modal) return openModal(t.dataset.modal);
+  if (t.hasAttribute("data-close")) closeModals();
+  if (t.dataset.do) actions[t.dataset.do]?.(t);
+  if (t.dataset.toast) toast(t.dataset.toast);
+  if (t.dataset.seg) { t.parentElement.querySelectorAll("button").forEach(b => b.classList.toggle("on", b === t)); document.querySelectorAll("#verify [data-pane]").forEach(p => p.hidden = p.dataset.pane !== t.dataset.seg); return; }
+  if (t.dataset.gi) { document.querySelectorAll(".gc").forEach(c => { c.classList.toggle("on", c === t); const v = c.querySelector("video"); c === t ? v.play().catch(() => {}) : v.pause(); }); state.guardian = +t.dataset.gi; t.scrollIntoView({ inline: "center", behavior: "smooth", block: "nearest" }); render(); return; }
+  if (t.dataset.care) {
+    const [msg, xp, mood, bond, cost] = CARE[t.dataset.care];
+    if (state.points < cost) { toast(`积分不够（需要 ${cost}），去做任务赚积分吧`); return; }
+    state.points -= cost;
+    if ((t.dataset.care === "feed" || t.dataset.care === "play") && !state["c_" + t.dataset.care]) { state["c_" + t.dataset.care] = 1; state.mp.care++; }
+    state.mood = Math.min(100, state.mood + mood); state.bond = Math.min(100, state.bond + bond); state.xp += xp; pop(cost ? `${msg} +${xp} XP · −${cost} 积分` : `${msg} +${xp} XP`);
+    if (state.xp >= 100 && state.stage < 3) {
+      state.xp -= 100; state.lv += 1; state.stage += 1;
+      const bonus = LV_REWARD[state.lv] || 0; state.points += bonus;
+      setTimeout(() => { $("lvnum").textContent = "Lv." + state.lv; $("lvimg").src = stageImg();
+        // 升级弹窗：雪豹第一次升级播「变身」视频，之后播新阶段的视频；其他守护者播自己的视频
+        const lvv = $("lvvid"), showV = true;
+        const gid = G[state.guardian].id, lvsrc = state.guardian === 0 && state.stage === 1 ? "v-levelup" : `c-${gid}-${state.stage + 1}`;
+        lvv.src = `assets/video/${lvsrc}.mp4`; lvv.poster = `assets/video/${lvsrc === "v-levelup" ? "v-levelup" : lvsrc}.jpg`; lvv.loop = lvsrc !== "v-levelup";
+        lvv.style.display = showV ? "block" : "none"; $("lvimg").style.display = showV ? "none" : "";
+        if (showV) { lvv.currentTime = 0; lvv.play().catch(() => {}); } $("lvstage").textContent = `成为「${STAGES[state.stage]}」！升级奖励 +${bonus} 积分`; openModal("m-levelup"); }, 700);
+    }
+    state.xp = Math.min(state.xp, 100);
+    render(); return;
+  }
+  if (t.dataset.claim) {
+    const it = MIS.flatMap(g => g.items).find(x => x.id === t.dataset.claim);
+    state.claimed[it.id] = true; const pts = it.pts; state.points += pts;
+    if (it.entry && !state.taskEntry) { state.taskEntry = true; addEntry(); toast(`+${pts} 积分 · 抽奖机会 +1`); } else toast(`+${pts} 积分`);
+    render(); return;
+  }
+  if (t.dataset.mis !== undefined) {
+    if (!t.classList.contains("done")) {
+      t.classList.add("done"); t.textContent = "✓";
+      if (+t.dataset.mis) { state.points += +t.dataset.mis; toast(`+${t.dataset.mis} Points`); }
+      if (t.dataset.entry && !state.taskEntry) { state.taskEntry = true; addEntry(); }
+      render();
+    }
+    if (!t.dataset.go) return;
+  }
+  if (t.dataset.redeem) { const r = REWARDS.find(x => x[0] === t.dataset.redeem); state.points -= r[3]; state.redeemed[r[0]] = true; toast(`已兑换：${r[1]}`); render(); return; }
+  if (t.dataset.spot) { zoomSpot(+t.dataset.spot); return; }
+  if (t.classList.contains("tpl")) document.querySelectorAll(".tpl").forEach(p => p.classList.toggle("on", p === t));
+  if (t.classList.contains("wish")) document.querySelectorAll(".wish").forEach(p => p.classList.toggle("on", p === t));
+  if (t.matches(".seg button")) t.parentElement.querySelectorAll("button").forEach(b => b.classList.toggle("on", b === t));
+  if (t.hasAttribute("data-back")) go(state.hist.pop() || "home", false);
+  else if (t.dataset.go) go(t.dataset.go);
+});
+
+
+// ===== 玩法指南：标签跳转 =====
+document.getElementById("gtabs").addEventListener("click", e => {
+  const b = e.target.closest("[data-jump]"); if (!b) return;
+  document.querySelectorAll("#gtabs button").forEach(x => x.classList.toggle("on", x === b));
+  const t = document.getElementById(b.dataset.jump), body = document.getElementById("guidebody");
+  body.scrollTo({ top: t.offsetTop - body.offsetTop - 4, behavior: "smooth" });
+});
+// ===== 小游戏：冰川接水 =====
+const GAME = { left: 3, running: false };
+function startGame() {
+  if (GAME.left <= 0) return toast("今天 3 局已玩完，明天再来");
+  const arena = $("garena"), pet = $("gpet"), ring = $("gring"); pet.src = stageImg();
+  $("gstart").hidden = true; $("gend").hidden = true;
+  let score = 0, t = 30, px = arena.clientWidth / 2, combo = 0, best = 0, elapsed = 0; GAME.running = true; GAME.left--;
+  $("gscore").textContent = 0; $("gtime").textContent = 30; $("gleft").textContent = GAME.left; $("gleft2").textContent = GAME.left;
+  $("gbar").style.width = "100%"; $("gbar").classList.remove("low");
+  const setX = x => { px = Math.max(50, Math.min(arena.clientWidth - 50, x)); pet.style.left = px + "px"; ring.style.left = px + "px"; };
+  setX(px);
+  arena.onpointermove = e => { if (GAME.running) setX(e.clientX - arena.getBoundingClientRect().left); };
+  arena.onpointerdown = arena.onpointermove;
+  GAME.key = e => { if (!GAME.running) return; if (e.key === "ArrowLeft") setX(px - 45); if (e.key === "ArrowRight") setX(px + 45); };
+  const drops = [];
+  // 稀有掉落：每局约 3 成机会出现 1 张（正式版由后台控制，约 1–2%，每天全场限量）
+  const rareAt = !GAME.rareToday && Math.random() < .3 ? 8 + Math.floor(Math.random() * 14) : -1; let gotRare = false;
+  const make = (force) => {
+    const r = Math.random(), hard = elapsed / 30, type = force || (r < .12 ? "bottle" : r < .26 + hard * .12 ? "cloud" : "drop");
+    const el = document.createElement("div"); el.className = "gdrop g-" + type;
+    el.innerHTML = type === "rare" ? `<div class="tk"><img src="assets/icons/v-ticket.png" alt=""><span>Village Grocer RM5</span></div>` : type === "bottle" ? `<img src="assets/rw-bottle.png" alt="">` : type === "cloud" ? `<svg width="58" height="44" viewBox="0 0 64 48"><use href="#g-cloud"/></svg>` : `<svg width="30" height="38" viewBox="0 0 26 32"><use href="#g-drop"/></svg>`;
+    const w = type === "cloud" ? 58 : type === "rare" ? 74 : 30, x = 10 + Math.random() * (arena.clientWidth - w - 20); el.style.left = x + "px"; arena.appendChild(el);
+    drops.push({ el, x: x + w / 2, y: -60, v: type === "rare" ? 2.6 : (2.4 + Math.random() * 1.8) * (1 + hard * .7) * (type === "bottle" ? 1.25 : 1), type });
+  };
+  let spawn = setInterval(() => make(), 480);
+  const fx = (txt, x, y, color) => { const f = document.createElement("div"); f.className = "gfx"; f.textContent = txt; f.style.left = x - 14 + "px"; f.style.top = y + "px"; if (color) f.style.color = color; arena.appendChild(f); setTimeout(() => f.remove(), 800); };
+  const splash = (x, y) => { const s = document.createElement("div"); s.className = "gsplash"; s.style.left = x + "px"; s.style.top = y + "px"; arena.appendChild(s); setTimeout(() => s.remove(), 460); };
+  const anim = c => { pet.classList.remove("hit", "bad"); void pet.offsetWidth; pet.classList.add(c); };
+  const showCombo = () => { const c = $("gcombo"); c.classList.toggle("on", combo >= 5); c.textContent = `连击 ${combo} · ×2`; };
+  let raf, last = performance.now();
+  const loop = now => {
+    const H = arena.clientHeight, catchY = H - 64 - 130, k = Math.min(4, (now - last) / 16.7); last = now;
+    for (let i = drops.length - 1; i >= 0; i--) {
+      const d = drops[i]; d.y += d.v * k; d.el.style.top = d.y + "px";
+      if (d.y > catchY && d.y < catchY + 60 && Math.abs(d.x - px) < 62) {
+        let pts;
+        if (d.type === "rare") { pts = 0; gotRare = true; GAME.rareToday = true; anim("hit"); splash(d.x, catchY + 30); addVoucher({ m: "Village Grocer", v: "RM5 现金券", c: "满 RM30 可用", col: "#2F6B45", ic: "v-ticket", logo: "logos/village-grocer.jpg", tag: "VG", rare: true }); fx("🎉 稀有券！", d.x, d.y, "#FFD66B"); }
+        else if (d.type === "cloud") { pts = -20; combo = 0; anim("bad"); if (navigator.vibrate) navigator.vibrate(60); }
+        else { combo++; best = Math.max(best, combo); pts = (d.type === "bottle" ? 30 : 10) * (combo >= 5 ? 2 : 1); anim("hit"); splash(d.x, catchY + 30); }
+        score = Math.max(0, score + pts); showCombo();
+        if (d.type !== "rare") fx(pts > 0 ? `+${pts}` : `${pts}`, d.x, d.y, pts < 0 ? "#FFB4AB" : d.type === "bottle" ? "#FFD66B" : null); $("gscore").textContent = score; d.el.remove(); drops.splice(i, 1);
+      } else if (d.y > H) { if (d.type !== "cloud" && d.type !== "rare") { combo = 0; showCombo(); } d.el.remove(); drops.splice(i, 1); }
+    }
+    if (GAME.running) raf = requestAnimationFrame(loop);
+  };
+  raf = requestAnimationFrame(loop);
+  const timer = setInterval(() => {
+    t--; elapsed++; $("gtime").textContent = t; $("gbar").style.width = t / 30 * 100 + "%"; $("gbar").classList.toggle("low", t <= 5);
+    if (elapsed === 15) { clearInterval(spawn); spawn = setInterval(() => make(), 380); }
+    if (elapsed === rareAt) make("rare");
+    if (t <= 0) {
+      GAME.stop();
+      const pts = Math.min(30, Math.floor(score / 10)), xp = Math.min(30, Math.floor(score / 10));
+      state.points += pts; state.xp = Math.min(100, state.xp + xp); GAME.top = Math.max(GAME.top || 0, score);
+      const stars = score >= 300 ? 3 : score >= 150 ? 2 : score > 0 ? 1 : 0;
+      $("gstars").innerHTML = "<i>" + "★".repeat(stars) + "</i>" + "★".repeat(3 - stars);
+      $("gendcap").textContent = ["再试一次！", "不错哦！", "很棒！", "太厉害了！"][stars];
+      $("gfinal").textContent = score; $("gbest").textContent = best; $("gtop").textContent = GAME.top;
+      $("gpts").textContent = "+" + pts; $("gxp").textContent = "+" + xp; $("gend").hidden = false; $("gcombo").classList.remove("on"); $("grare").classList.toggle("on", gotRare);
+      $("gagain").querySelector("b").textContent = GAME.left > 0 ? `再玩一局（剩 ${GAME.left} 局）` : "今天的 3 局玩完了";
+      state.mp.game = Math.min(3, state.mp.game + 1); render();
+    }
+  }, 1000);
+  GAME.stop = () => { clearInterval(timer); clearInterval(spawn); GAME.running = false; cancelAnimationFrame(raf); drops.forEach(d => d.el.remove()); drops.length = 0; };
+}
+$("gplay").onclick = startGame; $("gagain").onclick = startGame;
+document.addEventListener("keydown", e => GAME.key && GAME.key(e));
+
+
+// 验证码倒数
+document.getElementById("otpbtn").addEventListener("click", e => { const b = e.currentTarget, t0 = Date.now(); toast("验证码已发送（Demo：836214）"); b.disabled = true; const iv = setInterval(() => { const l = 60 - Math.floor((Date.now() - t0) / 1000); b.querySelector("b").textContent = l > 0 ? `${l}s 后重发` : "重新获取"; if (l <= 0) { clearInterval(iv); b.disabled = false; } }, 500); });
+// ===== 剧集 =====
+const EPS = [
+  { t: "寻找纯净之源", d: "1:02", desc: "六位来自不同地方的守护者，接到了一个使命：找到传说中海拔 5100 米的纯净之源。他们第一次在雪山脚下相遇……", lock: 0, vid: "v-drama" },
+  { t: "雪夜的约定", d: "0:58", desc: "暴风雪来临的夜晚，雪豹和藏狐在灯笼下许下约定：无论多远，都要一起把纯净的水带回家。", lock: 0 },
+  { t: "落队的伙伴", d: "1:05", desc: "黑颈鹤在风雪中和大家走散了。伙伴们提着灯笼一路寻找——守护，从不丢下任何一个人。", lock: 80 },
+  { t: "见义勇为", d: "1:00", desc: "冰河上的桥快要断了，牦牛和藏野驴挺身而出，藏羚羊带着大家冲过最危险的一段路。", lock: "2 月 1 日" },
+];
+const epPoster = i => `assets/poster-${i + 1}.jpg`;
+const epFallback = ["g-yak", "g-snow-leopard", "g-crane", "g-kiang"];
+function epCard(i, small) {
+  const e = EPS[i], locked = e.lock && !state.unlocked?.[i];
+  return `<div class="ep" data-ep="${i}"><div class="im"><img src="${epPoster(i)}" onerror="this.onerror=null;this.src='assets/${epFallback[i]}.png';this.style.objectFit='contain'" alt="">${locked ? `<div class="lk">🔒<br>${typeof e.lock === "number" ? e.lock + " 积分解锁" : e.lock + " 上线"}</div>` : `<div class="ept"><small>EP ${i + 1}</small>${e.t}</div>`}</div><b>${i + 1} · ${e.t}</b><span>${e.d}</span></div>`;
+}
+function renderEps() {
+  $("hubeps").innerHTML = EPS.map((e, i) => epCard(i)).join("");
+  $("homeeps").innerHTML = EPS.slice(0, 3).map((e, i) => epCard(i)).join("");
+  $("epcount").textContent = `${EPS.filter((e, i) => !e.lock || state.unlocked?.[i]).length} / 8 已解锁`;
+}
+state.unlocked = {}; state.watched = {};
+function openEp(i) {
+  const e = EPS[i];
+  if (e.lock && !state.unlocked[i]) {
+    if (typeof e.lock === "number") return openInfo({ img: epPoster(i), caps: `EPISODE ${i + 1} · 未解锁`, title: e.t, text: `用 ${e.lock} 积分提前解锁这一集（你现在有 ${state.points} 积分）。`, btn: state.points >= e.lock ? `用 ${e.lock} 积分解锁` : "积分不够，去赚积分", act: () => { if (state.points >= e.lock) { state.points -= e.lock; state.unlocked[i] = true; toast("已解锁第 " + (i + 1) + " 集"); renderEps(); render(); openEp(i); } else go("missions"); } });
+    return openInfo({ img: epPoster(i), caps: `EPISODE ${i + 1}`, title: e.t, text: `这一集 ${e.lock} 上线，到时会提醒你。`, btn: "好的" });
+  }
+  state.epCur = i;
+  go("episode");
+  const v = $("epvid"), im = $("epposter");
+  $("epno").textContent = `EPISODE ${i + 1} · ${e.d}`; $("eptitle").textContent = e.t; $("epdesc").textContent = e.desc;
+  if (e.vid) { v.hidden = false; im.hidden = true; $("epsoon").hidden = true; v.src = `assets/video/${e.vid}.mp4`; v.poster = epPoster(i); v.play().catch(() => {}); }
+  else { v.pause(); v.hidden = true; im.hidden = false; im.src = epPoster(i); im.onerror = () => { im.src = "assets/band-cast.jpg"; }; $("epsoon").hidden = false; }
+  const c = $("epclaim"); c.disabled = !!state.watched[i]; c.querySelector("b").textContent = state.watched[i] ? "已领取 +20 积分" : "看完了 · 领 +20 积分";
+  c.onclick = () => { if (state.watched[i]) return; state.watched[i] = true; state.points += 20; state.xp = Math.min(100, state.xp + 10); toast("+20 积分 · 守护者经验 +10"); c.disabled = true; c.querySelector("b").textContent = "已领取 +20 积分"; render(); };
+  $("epnext").innerHTML = EPS.map((x, j) => j !== i ? epCard(j) : "").join("");
+}
+// ===== 通用详情弹窗 =====
+let infoAct = null;
+const SPOTS = [
+  { cn: "冰川湖", en: "SNOW LAKE · 第 1 站", text: "旅程的起点。湖水来自雪山融化的冰川，清澈见底，就是 5100 的水源一样纯净。", rw: ["🏅 冰川徽章", "📸 回忆照片"], need: "领养即解锁" },
+  { cn: "冰川洞", en: "GLACIER CAVE · 第 2 站", text: "藏在冰川深处的蓝色冰洞，冰层一年年慢慢积累，把雪山的水层层过滤。", rw: ["📸 回忆照片", "+50 积分"], need: "守护者 Lv.2" },
+  { cn: "经幡谷", en: "PRAYER FLAG VALLEY · 第 3 站", text: "挂满五色经幡的山谷，风吹过时带着大家的新年祝福飞向雪山。", rw: ["🧣 专属围巾", "+100 积分"], need: "守护者 Lv.3" },
+  { cn: "神圣之峰", en: "SACRED PEAK · 第 4 站", text: "海拔 5100 米的雪峰，守护者旅程的终点，也是 5100 冰川水的源头。", rw: ["📜 守护故事", "+300 积分", "限定外观"], need: "守护者 Lv.5" },
+];
+// 自己写祝福：普通话 20 字，English / Bahasa 80 个字母（约 7 秒说完）
+const wishLimit = () => document.querySelector("#wishlang .on")?.textContent === "普通话" ? 20 : 80;
+function wishCount() {
+  const lim = wishLimit(), n = $("wishtxt").value.length, el = $("wishn");
+  el.textContent = lim === 20 ? `${n}/20 字` : `${n}/80`; el.classList.toggle("over", n > lim);
+  $("wishtxt").placeholder = lim === 20 ? "例如：祝阿嬷身体健康，长命百岁！" : "e.g. Happy New Year, Grandma! Stay healthy and happy!";
+}
+$("wishtxt").addEventListener("input", wishCount);
+$("wishcustom").addEventListener("click", () => setTimeout(() => { $("wishtxt").focus(); wishCount(); }));
+$("wishtxt").addEventListener("focus", () => document.querySelectorAll(".wish").forEach(p => p.classList.toggle("on", p.id === "wishcustom")));
+$("wishlang").addEventListener("click", () => setTimeout(wishCount));
+let SEL = -1;
+document.addEventListener("click", e => { if (SEL >= 0 && e.target.id === "mapin") zoomSpot(-1); });
+function zoomSpot(i) {
+  const scr = $("journey"), mi = $("mapin");
+  document.querySelectorAll("#journey .pin").forEach(p => p.classList.toggle("sel", +p.dataset.spot === i));
+  if (i < 0) { SEL = -1; scr.classList.remove("zoomed"); mi.style.transform = ""; mi.style.setProperty("--s", 1); return; }
+  SEL = i;
+  const pin = document.querySelector(`#journey [data-spot="${i}"]`), s = 2.2;
+  const px = parseFloat(pin.style.left), py = parseFloat(pin.style.top);
+  const clamp = (v, lo) => Math.min(0, Math.max(lo, v));
+  const tx = clamp(50 - s * px, 100 - 100 * s), ty = clamp(36 - s * py, 100 - 100 * s);
+  mi.style.setProperty("--s", s);
+  mi.style.transform = `translate(${tx}%, ${ty}%) scale(${s})`;
+  scr.classList.add("zoomed");
+  const d = SPOTS[i], done = i <= state.spot, next = i === state.spot + 1;
+  $("spcaps").textContent = d.en; $("spname").textContent = d.cn;
+  $("sptag").textContent = done ? "已到达" : next ? "下一站" : "未解锁 · " + d.need;
+  $("sptext").textContent = d.text;
+  $("sprw").innerHTML = d.rw.map(r => `<span>${r}</span>`).join("");
+  $("spbtn").querySelector("b").textContent = done ? "查看回忆" : next ? (state.lv >= 2 ? "出发去这里" : "Lv.2 才能出发") : "去养成守护者";
+}
+
+function openInfo({ img, caps = "", title = "", text = "", btn = "好的", act = null }) {
+  const im = $("infoimg"); im.hidden = !img; if (img) { im.src = img; im.onerror = () => { im.hidden = true; }; }
+  $("infocaps").textContent = caps; $("infotitle").textContent = title; $("infotext").innerHTML = text; $("infobtn").querySelector("b").textContent = btn; infoAct = act; openModal("m-info");
+}
+$("infobtn").addEventListener("click", () => { const a = infoAct; infoAct = null; setTimeout(() => a && a(), 50); });
+document.addEventListener("click", e => {
+  const ep = e.target.closest("[data-ep]"); if (ep) { e.stopPropagation(); return openEp(+ep.dataset.ep); }
+  const inf = e.target.closest("[data-info]"); if (inf) { e.stopPropagation(); return openInfo(JSON.parse(inf.dataset.info)); }
+}, true);
+// ===== 把原本按不进去的地方都接上 =====
+function wire(sel, fn) { document.querySelectorAll(sel).forEach((el, i) => fn(el, i)); }
+const INFO = (el, o) => { el.dataset.info = JSON.stringify(o); el.style.cursor = "pointer"; };
+wire("#landing .perks span", (el, i) => { if (i === 0) el.dataset.modal = "m-bless"; else el.dataset.go = ["", "draw", "pick"][i]; el.style.cursor = "pointer"; });
+wire("#share .tags .chip", el => el.dataset.toast = `已复制 ${el.textContent}`);
+wire("#verify .card", el => INFO(el, { img: "assets/box.jpg", caps: "WHERE IS MY CODE", title: "Unique Code 在哪里？", text: "打开盲盒，守护者公仔旁边有一张好运卡。<br>刮开卡片背面的银色涂层，就是 8 位代码。" }));
+wire("#welcome .gift", (el, i) => el.dataset.go = i ? "rewards" : "draw");
+wire("#guardian .top .chip", el => el.dataset.modal = "m-stages");
+wire("#memories .memory", el => el.dataset.toast = "已保存回忆卡到相册");
+const COL = [["🏅 冰川徽章", "到达冰川洞获得，已收藏。"], ["🧣 专属围巾", "到达经幡谷（Lv.3）解锁，守护者可以穿上。"], ["📜 守护故事", "到达神圣之峰（Lv.5）解锁守护者的身世故事。"]];
+wire("#memories .collect div", (el, i) => INFO(el, { caps: "COLLECTION", title: COL[i][0], text: COL[i][1] }));
+$("mislist").addEventListener("click", ev => { const r = ev.target.closest(".mis"); if (r && !ev.target.closest("button")) r.querySelector("button:not([disabled])")?.click(); });
+const TIER = [["探索者", "0 – 999 累计积分", "基础兑换"], ["守护者", "1,000 – 2,999 累计积分", "赚积分 ×1.2 · 每月 1 张 RM5 券"], ["守护精英", "3,000+ 累计积分", "赚积分 ×1.5 · 限定礼品优先兑换 · 生日礼"]];
+wire(".tiers div", (el, i) => { const k = i % 3; INFO(el, { img: `assets/tier-${k + 1}.png`, caps: "MEMBER TIER", title: TIER[k][0], text: `${TIER[k][1]}<br>权益：${TIER[k][2]}<br><small>会员等级看累计赚到的积分，花掉不扣。</small>` }); });
+wire("#drawrules", el => INFO(el, { caps: "LUCKY DRAW RULES", title: "iPhone DUO 抽奖规则", text: "购买验证 +1、分享 AI 祝福 +1、新春季度挑战 +1；每人最多 5 次。<br>2027 年 2 月 20 日公开抽出 5 位得奖者，以短信和 Email 通知。" }));
+wire("#draw .led", (el, i) => el.addEventListener("click", ev => { if (!ev.target.closest("em")) go(["verify", "tpl", "missions"][i]); }));
+wire("#hub .song", el => { el.style.cursor = "pointer"; el.dataset.toast = `正在播放：${el.querySelector("b").textContent}`; });
+const CH = [["纯净之源", "西藏当雄念青唐古拉山，泉眼海拔 5,100 米，是世界罕见的大型冰川自涌泉。"], ["自然的守护者", "雪豹、牦牛、黑颈鹤、藏狐、藏羚羊、藏野驴，六位守护者守护高原的平衡。"], ["守护的旅程", "穿越雪山河谷，守护每一滴纯净的水，也守护彼此。"], ["更明亮的明天", "以自然之力，带来更明亮、更健康的未来。"], ["与世界共享", "把高原的纯净分享给全世界，现在也来到了马来西亚。"], ["致敬未来", "守护自然，就是守护更好的明天。"]];
+wire("#brandz .chap", (el, i) => INFO(el, { img: `assets/story-${i + 1}.jpg`, caps: `CHAPTER 0${i + 1}`, title: CH[i][0], text: CH[i][1] }));
+const FACT = ["水源位于西藏当雄念青唐古拉山脉，远离城市与工业。", "曾获世界瓶装水大会「最佳矿泉水」奖。", "天然含锂、锶、偏硅酸等微量元素。", "马来西亚 Halal 认证产品，穆斯林朋友也可以放心饮用。"];
+wire("#brandz .facts div", (el, i) => INFO(el, { caps: "5100 FACTS", title: el.querySelector("b").textContent, text: FACT[i] }));
+wire("#m-stages .stg", (el, i) => INFO(el, { img: `assets/st-${G[0].id}-${i + 1}.png`, caps: "GROWTH STAGE", title: ["幼崽 · Lv.1", "探索者 · Lv.2", "守护者 · Lv.4", "传说守护者 · Lv.6"][i], text: ["刚出生的小守护者，需要你每天照顾。", "背上小包去探险，解锁喜马拉雅探索地图。", "戴上完整的守护项圈，开始守护高原。", "披上红色披风、全身发光的传说守护者，有专属奖励。"][i] }));
+wire("#wallet .tabs2 button", (el, i) => el.addEventListener("click", () => { el.parentElement.querySelectorAll("button").forEach(b => b.classList.toggle("on", b === el)); document.querySelectorAll("#wallet .vcard").forEach(v => v.hidden = i === 1); if (i === 1) toast("暂时没有已使用或过期的券"); }));
+$("vlist").addEventListener("click", ev => {
+  const c = ev.target.closest(".vcard"); if (!c) return;
+  if (c.querySelector(".vcode")) return toast("收银员扫条码即可");
+  const v = state.vouchers[+c.dataset.vi];
+  c.insertAdjacentHTML("beforeend", `<div class="vcode"><div class="barcode"></div><b>${v.code}</b><small>结账时出示给收银员扫码 · 请调高屏幕亮度</small></div>`);
+});
+$("mvlist").addEventListener("click", ev => {
+  const b = ev.target.closest("[data-mredeem]"), row = ev.target.closest(".mv"); if (!row) return;
+  const x = MERCH.find(m => m.id === row.dataset.mv);
+  if (!b) return openInfo({ caps: "MERCHANT VOUCHER", title: `${x.m} ${x.v} 现金券`, text: `${x.c}<br>${x.p} 积分兑换 · 有效期 30 天 · 每人每月限 2 张<br>兑换后放进「我的券包」，结账时出示条码给收银员扫。`, btn: "好的" });
+  if (b.disabled) return;
+  state.points -= x.p; state.mcount[x.id] = (state.mcount[x.id] || 0) + 1;
+  addVoucher({ m: x.m, v: x.v + " 现金券", c: x.c, col: x.col, ic: x.ic, logo: x.logo, tag: x.id.toUpperCase() });
+  toast(`已兑换 ${x.m} ${x.v}，放进券包了`); render();
+});
+function wireRewards() { wire(".rwi:not([data-w])", el => { el.dataset.w = 1; const b = el.querySelector("b").textContent, img = el.querySelector("img").src; el.addEventListener("click", ev => { if (ev.target.closest("button")) return; openInfo({ img, caps: "REWARD", title: b, text: `${el.querySelector("span").textContent} · ${el.querySelector("div[style]")?.textContent || ""}<br>兑换后在「我的券包 / 我的礼品」查看，实物可到指定门店领取或邮寄。`, btn: "好的" }); }); el.style.cursor = "pointer"; }); }
+wireRewards();
+wire("#home .hero .pts, .pts", el => { el.dataset.go = "guide"; el.style.cursor = "pointer"; });
+renderEps();
+
+const step = d => { closeModals(); go(order[(order.indexOf(cur) + d + order.length) % order.length]); };
+$("prev").onclick = () => step(-1); $("next").onclick = () => step(1);
+document.addEventListener("keydown", e => { if (cur === "game" && GAME.running) return; if (e.key === "ArrowRight") step(1); if (e.key === "ArrowLeft") step(-1); });
+function fit() { const ph = $("phone"); if (innerWidth <= 900) { ph.style.transform = ""; return; } ph.style.transform = `scale(${Math.min(1, (innerHeight - 40) / 844)})`; }
+addEventListener("resize", fit); fit();
+
+// 落地页：六位守护者视频轮流播放（两层交叉淡入）
+let lvi = 0, lvFront = $("lvA"), lvBack = $("lvB");
+function nextLanding() {
+  lvi = (lvi + 1) % G.length; const g = G[lvi];
+  lvBack.src = `assets/video/v-${g.id}.mp4`; lvBack.poster = `assets/video/v-${g.id}.jpg`; lvBack.currentTime = 0;
+  lvBack.play().catch(() => {});
+  lvBack.style.opacity = 1; lvFront.style.opacity = 0;
+  $("lgname").innerHTML = `<b>${g.cn}</b> ${g.en} · ${g.trait}`;
+  [lvFront, lvBack] = [lvBack, lvFront];
+}
+[$("lvA"), $("lvB")].forEach(v => v.addEventListener("ended", () => { if (v === lvFront) nextLanding(); }));
+
+go(location.hash.slice(1) || "landing", false);
+if (cur === "landing") setTimeout(() => openModal("m-bless"), 900);  // 一进来就弹出祝福视频
+</script>
+</body>
+</html>

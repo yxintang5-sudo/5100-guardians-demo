@@ -233,6 +233,78 @@
   .sec { display: flex; justify-content: space-between; align-items: flex-end; margin: 20px 2px 10px; }
   .sec div b { display: block; font: 700 18px var(--f-serif); }
   .sec .more { font-size: 12px; color: var(--red); font-weight: 700; cursor: pointer; }
+  /* 首页活动 banner（扫码领奖 / 新年贴图） */
+  .hbn { margin: 14px -18px 0; overflow-x: auto; scroll-snap-type: x mandatory; display: flex; gap: 10px; padding: 0 18px; scrollbar-width: none; }
+  .hbn::-webkit-scrollbar { display: none; }
+  .hbn .bn { flex: 0 0 100%; scroll-snap-align: center; border-radius: 18px; height: 128px; position: relative; overflow: hidden; color: #fff; display: flex; align-items: center; padding: 14px 16px; cursor: pointer; box-shadow: 0 10px 22px rgba(20,48,107,.18); }
+  .hbn .bn.scanb { background: linear-gradient(120deg, #1D3F86, #2F63B0 60%, #8FBDEB); }
+  .hbn .bn.stkb { background: linear-gradient(120deg, #0E7A5F, #25D366 70%, #A8F0C6); }
+  .hbn .bn .t { position: relative; z-index: 2; max-width: 60%; }
+  .hbn .bn .t small { display: block; font: 700 9.5px var(--f-caps); letter-spacing: .18em; opacity: .85; }
+  .hbn .bn .t b { display: block; font: 700 19px/1.25 var(--f-serif); margin: 2px 0 4px; }
+  .hbn .bn .t span { font-size: 11.5px; opacity: .92; display: block; }
+  .hbn .bn .t em { display: inline-block; margin-top: 8px; font-style: normal; font-weight: 700; font-size: 11.5px; background: #fff; color: var(--glacier-navy); border-radius: 99px; padding: 4px 10px; }
+  .hbn .bn.stkb .t em { color: #0E7A5F; }
+  .hbn .bn .art { position: absolute; right: 4px; bottom: 0; top: 0; width: 40%; display: flex; align-items: flex-end; justify-content: center; gap: 0; }
+  .hbn .bn .art img { filter: drop-shadow(0 6px 8px rgba(0,0,0,.25)); }
+  .hbn .bn.scanb .art img.box { height: 92px; margin-bottom: 10px; }
+  .hbn .bn.scanb .art img.cap { height: 66px; margin: 0 0 12px -14px; animation: bob 2.4s ease-in-out infinite; }
+  .hbn .bn.stkb .art img { height: 64px; margin: 0 -12px 16px; transform: rotate(-8deg); }
+  .hbn .bn.stkb .art img:nth-child(2) { height: 84px; transform: rotate(6deg); z-index: 2; margin-bottom: 22px; }
+  .hbn .bn.stkb .wa { position: absolute; left: 16px; top: 12px; width: 18px; height: 18px; filter: brightness(0) invert(1); z-index: 2; display: none; }
+  .hdots { display: flex; justify-content: center; gap: 6px; margin-top: 8px; }
+  .hdots i { width: 6px; height: 6px; border-radius: 99px; background: #D9C7A6; transition: width .3s; }
+  .hdots i.on { width: 18px; background: var(--tibet-blue); }
+  @keyframes bob { 50% { transform: translateY(-6px) rotate(-6deg); } }
+  /* 首页右下角：扫码买水按钮（动画） */
+  .fabscan { position: absolute; right: 14px; bottom: 96px; z-index: 6; width: 66px; height: 66px; border-radius: 50%; border: 0; padding: 0; background: radial-gradient(circle at 35% 30%, #fff, #DCEBFA); box-shadow: 0 0 0 3px #fff, 0 10px 24px rgba(20,48,107,.35); overflow: visible; cursor: pointer; }
+  .fabscan video, .fabscan img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+  .fabscan [hidden] { display: none !important; }
+  .fabscan img.still { object-fit: contain; padding: 8px; animation: bob 2.2s ease-in-out infinite; }
+  .fabscan::before { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid rgba(47,99,176,.55); animation: fabring 2s ease-out infinite; pointer-events: none; }
+  .fabscan span { position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%); white-space: nowrap; background: var(--g-main); color: #fff; font: 700 10.5px var(--f-sans); padding: 2px 8px; border-radius: 99px; box-shadow: 0 3px 8px rgba(20,48,107,.3); }
+  @keyframes fabring { from { transform: scale(.95); opacity: .9; } to { transform: scale(1.25); opacity: 0; } }
+  /* 扫码页：整箱 / 单瓶 */
+  .qrtype { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; text-align: left; }
+  .qrtype button { border: 1.5px solid var(--gold-line); background: #fff; border-radius: 16px; padding: 10px 10px 12px; text-align: center; }
+  .qrtype button.on { border-color: var(--tibet-blue); box-shadow: 0 0 0 3px var(--ice); }
+  .qrtype img { height: 58px; display: block; margin: 0 auto 4px; }
+  .qrtype b { display: block; font: 700 14px var(--f-serif); color: var(--glacier-navy); }
+  .qrtype span { font-size: 11px; color: var(--ink-soft); display: block; line-height: 1.4; }
+  .qrtype em { display: inline-block; margin-top: 6px; font-style: normal; font-size: 11px; font-weight: 700; color: var(--tibet-blue); background: var(--ice); border-radius: 99px; padding: 1px 8px; }
+  #scan .foot[hidden] { display: none; }
+  .qrrule { text-align: left; background: #fff; border: 1px solid var(--gold-line); border-radius: 16px; padding: 12px 14px; margin-top: 12px; font-size: 12px; color: var(--ink-soft); }
+  .qrrule b { color: var(--glacier-navy); font: 700 13.5px var(--f-serif); display: block; margin-bottom: 4px; }
+  .qrrule ol { margin: 4px 0 0; padding-left: 18px; } .qrrule li { margin: 3px 0; }
+  .qrsim { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 10px; }
+  .qrsim button { border: 1px dashed var(--tibet-blue); background: var(--snow); color: var(--tibet-blue); border-radius: 12px; font: 700 11px var(--f-sans); padding: 8px 4px; }
+  .scanres { text-align: center; }
+  .scanres .rimg { height: 96px; margin: 4px auto 0; display: block; }
+  .scanres .gain { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 12px 0; }
+  .scanres .gain div { background: #fff; border: 1px solid var(--gold-line); border-radius: 14px; padding: 8px 10px; min-width: 88px; font-size: 12px; }
+  .scanres .gain img { width: 38px; display: block; margin: 0 auto 2px; }
+  .scanres .gain b { font: 700 17px var(--f-serif); color: var(--tibet-blue); display: block; }
+  .scanres .gain .r b { color: var(--lucky-red); }
+  .scanres .note { font-size: 12px; color: var(--ink-soft); background: var(--snow); border-radius: 12px; padding: 8px 12px; text-align: left; }
+  .scanres.dup .h1 { color: var(--ink-soft); }
+  /* 新年贴图 */
+  .stkhead { display: flex; align-items: center; gap: 12px; background: linear-gradient(120deg, #0E7A5F, #25D366); color: #fff; border-radius: 18px; padding: 12px 14px; cursor: pointer; box-shadow: 0 10px 22px rgba(14,122,95,.25); }
+  .stkhead img { width: 34px; height: 34px; filter: brightness(0) invert(1); flex: 0 0 34px; }
+  .stkhead b { display: block; font: 700 16px var(--f-serif); }
+  .stkhead span { font-size: 12px; opacity: .9; }
+  .stkhead em { margin-left: auto; font-style: normal; font-weight: 700; font-size: 12px; background: #fff; color: #0E7A5F; border-radius: 99px; padding: 6px 12px; white-space: nowrap; }
+  .stkgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+  .stkgrid button { border: 0; background: #fff; border-radius: 16px; padding: 6px; aspect-ratio: 1; box-shadow: 0 4px 12px rgba(20,48,107,.08); position: relative; }
+  .stkgrid button img { width: 100%; height: 100%; object-fit: contain; }
+  .stkgrid button:active { transform: scale(.96); }
+  .stkpack { display: flex; gap: 8px; margin-top: 4px; overflow-x: auto; scrollbar-width: none; }
+  .stkpack button { flex: 0 0 auto; border: 1px solid var(--gold-line); background: #fff; border-radius: 99px; padding: 6px 12px; font: 700 12px var(--f-sans); color: var(--ink-soft); }
+  .stkpack button.on { background: var(--glacier-navy); color: #fff; border-color: var(--glacier-navy); }
+  .washeet { text-align: center; }
+  .washeet .pv { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 10px 0 12px; }
+  .washeet .pv img { width: 100%; aspect-ratio: 1; object-fit: contain; }
+  .washeet .wabtn { background: #25D366 !important; color: #fff !important; }
+  .washeet .steps3 { text-align: left; font-size: 12px; color: var(--ink-soft); background: var(--snow); border-radius: 12px; padding: 8px 12px; margin-bottom: 10px; }
   .blesscard { border-radius: 18px; overflow: hidden; height: 150px; background: var(--g-navy); color: #fff; display: flex; border: 1px solid var(--gold-light); cursor: pointer; }
   .blesscard video { width: 108px; height: 100%; object-fit: cover; }
   .blesscard > div { padding: 14px; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
@@ -1034,7 +1106,7 @@
       </section>
 
       <section class="scr" id="home" data-g="E · 首页" data-t="首页：你好，守护者" data-own="我们做"
-        data-n="会员每天打开的第一页：守护者在雪山上跟你打招呼，Points 和等级、四个常用入口、AI 祝福、抽奖次数、守护者的冒险。"
+        data-n="会员每天打开的第一页：守护者在雪山上跟你打招呼，Points 和等级、活动 banner（买 5100 扫码领奖 / 新年贴图加入 WhatsApp）、四个常用入口、AI 祝福、抽奖次数、守护者的冒险。右下角常驻「扫码领奖」按钮。"
         data-ux="最重要的数字（Points、抽奖次数）都在第一屏；守护者会根据状态说话，<b>提醒用户回来照顾它</b>。">
         <div class="body" style="padding:0">
           <div class="hero">
@@ -1048,6 +1120,11 @@
           </div>
           <div style="padding:0 18px 20px">
             <div class="pts"><div><small>MY POINTS · 我的积分</small><b data-bind="points">100</b></div><div class="tier"><img data-bind="tierimg" src="assets/tier-1.png" alt=""><span data-bind="tiername">探索者</span></div></div>
+            <div class="hbn" id="hbn">
+              <div class="bn scanb" data-go="scan"><div class="t"><small>SCAN &amp; WIN</small><b>买 5100 · 扫码领奖</b><span>整箱扫箱内码 · 单瓶扫瓶盖码<br>积分、冰川水、抽奖机会一次到手</span><em>马上扫码 →</em></div><div class="art"><img class="box" src="assets/icons/box-qr.png" alt=""><img class="cap" src="assets/icons/cap-qr.png" alt=""></div></div>
+              <div class="bn stkb" data-go="stickers"><div class="t"><small>NEW YEAR STICKERS</small><b>新年贴图 · 免费领</b><span>守护者和 5100 拜年贴图<br>点一下加进 WhatsApp</span><em>加入 WhatsApp →</em></div><div class="art"><img src="assets/stickers/s1.png" alt=""><img src="assets/stickers/s7.png" alt=""><img src="assets/stickers/s3.png" alt=""></div></div>
+            </div>
+            <div class="hdots" id="hdots"><i class="on"></i><i></i></div>
             <div class="quick">
               <button data-go="guardian"><img class="ic3d" src="assets/icons/guardian.png" alt="">守护者</button>
               <button data-go="missions"><img class="ic3d" src="assets/icons/mission.png" alt="">任务</button>
@@ -1062,6 +1139,7 @@
             <div class="eps" id="homeeps"></div>
           </div>
         </div>
+        <button class="fabscan" data-go="scan" aria-label="扫码领奖"><video id="fabv" src="assets/video/fab-scan.mp4" poster="assets/icons/buy-water.png" muted loop playsinline autoplay hidden></video><img class="still" id="fabimg" src="assets/icons/buy-water.png" alt=""><span>扫码领奖</span></button>
         <nav class="tabs" data-tab="home"></nav>
       </section>
 
@@ -1080,26 +1158,44 @@
         <nav class="tabs" data-tab="missions"></nav>
       </section>
 
-      <section class="scr paper" id="scan" data-g="F · 任务与礼赠" data-t="扫瓶身码（再买一瓶）" data-own="我们做"
-        data-n="每瓶 5100 瓶盖内/瓶身有一个码，扫一次 +50 积分 + 1 瓶「冰川水」。冰川水是守护者最好的食物：经验 +50、心情直接满。"
-        data-ux="扫码结果直接告诉用户得到什么，并给「马上用冰川水喂守护者」，<b>把回购和养成连起来</b>。每个码只能用 1 次。">
-        <div class="bar"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl"><small>SCAN BOTTLE</small><b>扫瓶身码</b></div></div>
+      <section class="scr paper" id="scan" data-g="F · 任务与礼赠" data-t="扫码领奖（整箱 / 单瓶）" data-own="我们做（防重复在后台）"
+        data-n="买一箱：QR 在箱子里（打开箱子才看得到）；买一支：QR 在瓶盖里面。一个码只能用 1 次。生产时每个箱子的码和箱内每瓶的瓶盖码就绑在一起：<b>一箱的奖励有上限</b>（= 箱内瓶数 × 单瓶奖励 + 1 次抽奖）。先扫箱子：一次领完整箱奖励，箱内瓶盖码自动作废；先扫了几个瓶盖再扫箱子：只补发剩下的。所以不管怎么扫，一箱最多就是一箱的奖励。"
+        data-ux="先让用户选「整箱 / 单瓶」并用图告诉他码在哪里；扫到已计入整箱的瓶盖时，<b>友善提示「已经包含在整箱里」</b>而不是报错。每人每天最多扫 10 个瓶盖码，防止收集瓶盖刷分。">
+        <div class="bar"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl"><small>SCAN &amp; WIN</small><b>扫码领奖</b></div></div>
         <div class="body" style="text-align:center">
           <div id="scanstep1">
-            <p class="sub" style="margin:4px 0 0">对准瓶盖内或瓶身的 QR 码</p>
-            <div class="scanbox"><i></i></div>
-            <p class="sub" style="font-size:12px;margin:12px 0 0">每个码只能使用 1 次 · 也可以手动输入</p>
-            <div class="field" style="margin-top:10px;text-align:left"><input placeholder="手动输入瓶身码，例如 5100-8K2Q-77" id="scancode"></div>
+            <div class="qrtype" id="qrtype">
+              <button class="on" data-qt="box"><img src="assets/icons/box-qr.png" alt=""><b>买了一箱</b><span>打开箱子，QR 在箱盖内侧</span><em>一次领完整箱奖励</em></button>
+              <button data-qt="cap"><img src="assets/icons/cap-qr.png" alt=""><b>买了一瓶</b><span>拧开瓶盖，QR 在瓶盖里面</span><em>+50 积分 · +1 冰川水</em></button>
+            </div>
+            <div class="scanbox" style="margin-top:12px"><i></i></div>
+            <p class="sub" style="font-size:12px;margin:10px 0 0" id="scanhint">对准箱盖内侧的 QR 码（Demo：点扫描框模拟）</p>
+            <div class="qrsim"><button data-do="scanbox">模拟：扫整箱码</button><button data-do="scancap">模拟：扫单瓶码</button><button data-do="scandup">模拟：扫箱内瓶盖</button></div>
+            <div class="qrrule">
+              <b>一箱只算一次，不会重复领</b>
+              <ol>
+                <li>每个 QR 码只能用 1 次。</li>
+                <li>箱子的码和箱里每一瓶的瓶盖码是绑在一起的。</li>
+                <li>先扫箱子：一次领完整箱奖励，箱里的瓶盖码就不用再扫。</li>
+                <li>先扫了几个瓶盖：之后扫箱子只补发剩下的。</li>
+              </ol>
+            </div>
           </div>
-          <div id="scanstep2" class="scanok" hidden>
-            <div class="caps" style="margin-top:6px">SCAN SUCCESS</div>
-            <div class="h1" style="font-size:22px">扫码成功！谢谢你再选 5100</div>
-            <div class="gain"><div><img src="assets/icons/mission.png" alt=""><b>+50</b>积分</div><div><img src="assets/icons/feed.png" alt=""><b>+1</b>冰川水</div></div>
-            <p class="sub" style="font-size:13px">冰川水：守护者经验 +50、心情直接满。</p>
-          </div>
+          <div id="scanstep2" class="scanres" hidden></div>
         </div>
-        <div class="foot" id="scanfoot1"><button class="btn red" data-do="scan"><b>📷 扫描（Demo 模拟）</b><small>SCAN</small></button></div>
-        <div class="foot" id="scanfoot2" hidden><button class="btn red" data-do="usewater"><b>💧 马上用冰川水喂守护者</b><small>FEED NOW</small></button><button class="btn ghost" data-do="scanagain"><b>再扫一瓶</b></button></div>
+        <div class="foot" id="scanfoot2" hidden><button class="btn red" data-do="usewater"><b>💧 马上用冰川水喂守护者</b><small>FEED NOW</small></button><button class="btn ghost" data-do="scanagain"><b>再扫一个</b></button></div>
+      </section>
+
+      <section class="scr paper" id="stickers" data-g="F · 任务与礼赠" data-t="新年贴图（WhatsApp）" data-own="我们做（贴图由我们设计）"
+        data-n="守护者拜年贴图 + 5100 贴图，免费领。点「加入 WhatsApp」整套加进去；也可以点单张直接发给朋友。技术说明：Android 可以用 WhatsApp 官方的贴图包格式一键添加（需要一个很轻的 Android 贴图包 App 或用第三方贴图平台托管）；iPhone 上 WhatsApp 不允许网页直接加贴图包，所以 iPhone 用户改成「单张发送 → 在 WhatsApp 里长按加入收藏」。"
+        data-ux="顶部绿色 banner 一眼看懂「点一下就加进 WhatsApp」；每张贴图都可以单独发，降低门槛。贴图在群里传播 = 免费曝光 5100。">
+        <div class="bar"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="ttl"><small>NEW YEAR STICKERS</small><b>新年贴图</b></div></div>
+        <div class="body">
+          <div class="stkhead" data-modal="m-wa"><img src="assets/social/whatsapp.svg" alt=""><div><b>点一下，加入 WhatsApp</b><span>9 张守护者 &amp; 5100 拜年贴图 · 免费</span></div><em>加入</em></div>
+          <div class="sec"><div><span class="caps">STICKER PACK</span><b>雪域守护者 · 新春贴图</b></div><span class="more">点单张可直接发送</span></div>
+          <div class="stkgrid" id="stkgrid"></div>
+        </div>
+        <div class="foot"><button class="btn red" data-modal="m-wa" style="background:#25D366 !important"><b>整套加入 WhatsApp</b><small>ADD TO WHATSAPP</small></button></div>
       </section>
 
       <section class="scr paper" id="rewards" data-g="F · 任务与礼赠" data-t="积分兑换礼赠" data-own="我们做（核销在后台）"
@@ -1419,6 +1515,28 @@
         </div>
       </div>
 
+      <div class="modal" id="m-wa">
+        <div class="sheet washeet">
+          <button class="x" data-close style="top:12px;right:14px;background:rgba(20,48,107,.08);color:var(--glacier-navy)">✕</button>
+          <img src="assets/social/whatsapp.svg" alt="" style="width:40px;margin:2px auto 0">
+          <div class="caps" style="margin-top:6px">ADD STICKER PACK</div>
+          <div class="h1" style="font-size:20px">雪域守护者 · 新春贴图</div>
+          <p class="sub" style="margin:2px 0 0">5100 Tibet Spring · 9 张</p>
+          <div class="pv" id="wapv"></div>
+          <div class="steps3">打开 WhatsApp → 确认「添加」→ 在聊天的贴图里就能找到。<br>iPhone：点单张贴图发送，再在 WhatsApp 里长按「加入收藏」。</div>
+          <button class="btn red wabtn" data-do="addwa"><b>添加到 WhatsApp</b></button>
+        </div>
+      </div>
+
+      <div class="modal center-modal" id="m-stk">
+        <div class="sheet" style="text-align:center">
+          <button class="x" data-close style="top:12px;right:14px;background:rgba(20,48,107,.08);color:var(--glacier-navy)">✕</button>
+          <img id="stkbig" alt="" style="width:200px;height:200px;object-fit:contain;margin:8px auto 6px">
+          <div class="h1" style="font-size:20px" id="stkname"></div>
+          <div class="row" style="margin-top:12px"><button class="btn ghost" data-do="savestk"><b>保存图片</b></button><button class="btn red wabtn" data-do="sendstk" style="background:#25D366 !important"><b>发到 WhatsApp</b></button></div>
+        </div>
+      </div>
+
       <div class="modal center-modal" id="m-logout">
         <div class="sheet" style="text-align:center">
           <div class="h1" style="font-size:20px;margin-top:6px">确定要登出吗？</div>
@@ -1542,7 +1660,7 @@ const MIS = [
     { id: "bless", ic: "share", t: "分享 AI 新年祝福", d: "带 #5100新年好运 发布", rw: ["+30 积分"], max: 1, go: "tpl" },
   ]},
   { grp: "常驻任务", sub: "随时可以做", items: [
-    { id: "scan", ic: "scan", t: "扫瓶身码 · 再买一瓶", d: "每瓶 1 次", rw: ["+50 积分", "+1 冰川水"], go: "scan", repeat: true },
+    { id: "scan", ic: "scan", t: "买 5100 扫码领奖", d: "整箱扫箱内码 · 单瓶扫瓶盖码", rw: ["+50 积分 / 瓶", "+1 冰川水 / 瓶", "整箱 +1 抽奖"], go: "scan", repeat: true },
     { id: "drama", ic: "drama", t: "看一集「守护者的冒险」", d: "每集 1 次", rw: ["+20 积分", "+10 经验"], go: "hub", repeat: true },
     { id: "brand", ic: "book", t: "了解 5100 水源知识", d: "读完品牌故事", rw: ["+50 积分"], max: 1, go: "brandz" },
     { id: "invite", ic: "friends", t: "邀请好友注册", d: "每月最多 5 人，好友也得 +50", rw: ["+200 积分 / 人"], max: 5, modal: "m-invite" },
@@ -1748,11 +1866,38 @@ const actions = {
     const bonus = state.ck === 7 ? 100 : 0; state.points += 10 + bonus; state.xp = Math.min(100, state.xp + 10);
     toast(bonus ? "签到 +10，连续 7 天额外 +100！" : "签到成功 +10 积分 · 守护者经验 +10"); render();
   },
-  scan() {
-    $("scanstep1").hidden = true; $("scanstep2").hidden = false; $("scanfoot1").hidden = true; $("scanfoot2").hidden = false;
-    state.points += 50; state.water++; toast("+50 积分 · 冰川水 +1"); render();
+  scan() { actions.scancap(); },
+  scanbox() {
+    const B = state.box;
+    if (B.claimed) return scanResult(`<div class="scanres dup"><img class="rimg" src="assets/icons/box-qr.png" alt=""><div class="caps">ALREADY USED</div><div class="h1" style="font-size:20px">这个箱子的码已经用过了</div><p class="note">每个码只能用 1 次。再买一箱 5100，就能再领一次整箱奖励。</p></div>`, false);
+    const left = BOX_N - B.capsBefore, pts = left * 50;
+    B.claimed = true; state.points += pts; state.water += left;
+    if (!state.verified) { state.verified = true; addEntry(); }
+    scanResult(`<div class="scanres"><img class="rimg" src="assets/icons/box-qr.png" alt=""><div class="caps">BOX SCANNED · 整箱 ${BOX_N} 瓶</div><div class="h1" style="font-size:22px">整箱奖励到手！</div>
+      <div class="gain"><div><img src="assets/icons/mission.png" alt=""><b>+${pts}</b>积分</div><div><img src="assets/icons/feed.png" alt=""><b>+${left}</b>冰川水</div><div class="r"><img src="assets/icons/trophy.png" alt=""><b>+1</b>iPhone 抽奖</div></div>
+      <p class="note">${B.capsBefore ? `你之前已经扫了这箱里的 ${B.capsBefore} 个瓶盖，所以这次只补发剩下的 ${left} 瓶。` : `这箱 ${BOX_N} 瓶的瓶盖码已经自动计入，<b>不用再一个一个扫</b>。`}一箱的奖励 = ${BOX_N} 瓶 × 50 积分 + ${BOX_N} 冰川水 + 1 次抽奖。</p></div>`, true);
+    toast(`+${pts} 积分 · 冰川水 +${left} · 抽奖 +1`);
   },
-  scanagain() { $("scanstep1").hidden = false; $("scanstep2").hidden = true; $("scanfoot1").hidden = false; $("scanfoot2").hidden = true; },
+  scancap() {
+    state.points += 50; state.water++;
+    scanResult(`<div class="scanres"><img class="rimg" src="assets/icons/cap-qr.png" alt=""><div class="caps">CAP SCANNED</div><div class="h1" style="font-size:22px">扫码成功！谢谢你再选 5100</div>
+      <div class="gain"><div><img src="assets/icons/mission.png" alt=""><b>+50</b>积分</div><div><img src="assets/icons/feed.png" alt=""><b>+1</b>冰川水</div></div>
+      <p class="note">冰川水：守护者经验 +50、心情直接满。每人每天最多扫 10 个瓶盖码。</p></div>`, true);
+    toast("+50 积分 · 冰川水 +1");
+  },
+  scandup() {
+    const B = state.box;
+    if (!B.claimed) { // 箱子还没扫：这个瓶盖先给单瓶奖励，之后扫箱子会扣掉
+      if (B.capsBefore >= BOX_N) return scanResult(`<div class="scanres dup"><div class="h1" style="font-size:20px">这箱的瓶盖都扫完了</div><p class="note">这箱 ${BOX_N} 瓶的奖励已经全部领完。</p></div>`, false);
+      B.capsBefore++; state.points += 50; state.water++;
+      return scanResult(`<div class="scanres"><img class="rimg" src="assets/icons/cap-qr.png" alt=""><div class="caps">CAP FROM A BOX · 第 ${B.capsBefore} / ${BOX_N} 瓶</div><div class="h1" style="font-size:21px">+50 积分 · +1 冰川水</div><p class="note">这瓶来自一整箱。之后再扫箱子的码，会补发剩下 ${BOX_N - B.capsBefore} 瓶的奖励和 1 次抽奖，<b>不会重复算</b>。</p></div>`, true);
+    }
+    scanResult(`<div class="scanres dup"><img class="rimg" src="assets/icons/cap-qr.png" alt=""><div class="caps">ALREADY INCLUDED</div><div class="h1" style="font-size:20px">这瓶已经包含在整箱奖励里了</div><p class="note">你已经扫过这一箱的码，箱里每一瓶的奖励都已经一起领了，不用再扫瓶盖。😊</p></div>`, false);
+  },
+  scanagain() { $("scanstep1").hidden = false; $("scanstep2").hidden = true; $("scanfoot2").hidden = true; },
+  addwa() { closeModals(); toast("Demo：已打开 WhatsApp 添加贴图包"); },
+  sendstk() { closeModals(); toast(`Demo：已打开 WhatsApp 发送「${STK[STKI]}」`); },
+  savestk() { closeModals(); toast("已保存到相册"); },
   usewater() {
     if (state.water < 1) return toast("先扫一瓶 5100 获得冰川水");
     state.water--; state.mood = 100; state.xp = Math.min(99, state.xp + 50); actions.scanagain(); go("guardian"); render();
@@ -1967,6 +2112,31 @@ $("wishtxt").addEventListener("input", wishCount);
 $("wishcustom").addEventListener("click", () => setTimeout(() => { $("wishtxt").focus(); wishCount(); }));
 $("wishtxt").addEventListener("focus", () => document.querySelectorAll(".wish").forEach(p => p.classList.toggle("on", p.id === "wishcustom")));
 $("wishlang").addEventListener("click", () => setTimeout(wishCount));
+// ===== 新年贴图 =====
+const STK = ["恭喜发财", "身体健康", "万事如意", "心想事成", "新年快乐", "羊年大吉", "好水有好运", "新年有5100", "新春快乐"];
+$("stkgrid").innerHTML = STK.map((n, i) => `<button data-stk="${i}" aria-label="${n}"><img src="assets/stickers/s${i + 1}.png" alt="${n}"></button>`).join("");
+$("wapv").innerHTML = STK.slice(0, 5).map((n, i) => `<img src="assets/stickers/s${i + 1}.png" alt="">`).join("");
+let STKI = 0;
+$("stkgrid").addEventListener("click", ev => { const b = ev.target.closest("[data-stk]"); if (!b) return; STKI = +b.dataset.stk; $("stkbig").src = `assets/stickers/s${STKI + 1}.png`; $("stkname").textContent = STK[STKI]; openModal("m-stk"); });
+// ===== 首页 banner 自动轮播 =====
+(() => {
+  const el = $("hbn"), dots = [...document.querySelectorAll("#hdots i")]; let k = 0, hold = 0;
+  const show = i => { k = i; el.scrollTo({ left: el.clientWidth * i, behavior: "smooth" }); dots.forEach((d, j) => d.classList.toggle("on", j === i)); };
+  el.addEventListener("scroll", () => { const i = Math.round(el.scrollLeft / el.clientWidth); dots.forEach((d, j) => d.classList.toggle("on", j === i)); k = i; });
+  el.addEventListener("pointerdown", () => hold = Date.now());
+  setInterval(() => { if (cur === "home" && Date.now() - hold > 6000) show((k + 1) % dots.length); }, 4200);
+})();
+// 右下角扫码按钮：有动画视频就播视频，没有就用图标
+(() => { const v = $("fabv"); v.addEventListener("loadeddata", () => { v.hidden = false; $("fabimg").hidden = true; v.play().catch(() => {}); }); v.addEventListener("error", () => { v.hidden = true; }); })();
+// ===== 扫码：整箱 / 单瓶 =====
+const BOX_N = 6;          // 一箱几瓶（Demo：盲盒 6 瓶装）
+state.box = { claimed: false, capsBefore: 0 };
+$("qrtype").addEventListener("click", ev => { const b = ev.target.closest("[data-qt]"); if (!b) return; document.querySelectorAll("#qrtype button").forEach(x => x.classList.toggle("on", x === b)); $("scanhint").textContent = (b.dataset.qt === "box" ? "对准箱盖内侧的 QR 码" : "对准瓶盖里面的 QR 码") + "（Demo：点扫描框模拟）"; });
+document.querySelector("#scan .scanbox").addEventListener("click", () => actions[document.querySelector("#qrtype .on").dataset.qt === "box" ? "scanbox" : "scancap"]());
+function scanResult(html, water) {
+  $("scanstep1").hidden = true; $("scanstep2").hidden = false; $("scanstep2").innerHTML = html;
+  $("scanfoot2").hidden = false; $("scanfoot2").querySelector("[data-do=usewater]").style.display = water ? "" : "none"; render();
+}
 let SEL = -1;
 document.addEventListener("click", e => { if (SEL >= 0 && e.target.id === "mapin") zoomSpot(-1); });
 function zoomSpot(i) {

@@ -725,7 +725,9 @@
   .vsteps b { width: 24px; height: 24px; flex: 0 0 24px; border-radius: 50%; background: var(--glacier-navy); color: #fff; display: grid; place-items: center; font-size: 12px; }
   /* 小游戏 */
   #game { background: #0D2150; }
-  .garena { position: absolute; inset: 0; background: url(assets/bg-landing.jpg) center 60%/cover; overflow: hidden; touch-action: none; }
+  .garena { position: absolute; inset: 0; background: #DCEBFA; overflow: hidden; touch-action: none; }
+  .garena .gbg { position: absolute; inset: -24px; background: url(assets/bg-landing.jpg) center 60%/cover; filter: blur(9px) saturate(.8) brightness(1.06); pointer-events: none; }
+  .garena .gbg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(220,235,250,.35), rgba(246,250,254,.25) 55%, rgba(246,250,254,.45)); }
   .garena::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(13,33,80,.45), rgba(13,33,80,0) 26%, rgba(13,33,80,0) 70%, rgba(13,33,80,.35)); pointer-events: none; }
   .ghud { position: absolute; top: 50px; left: 12px; right: 12px; z-index: 5; display: flex; gap: 8px; align-items: center; }
   .ghud .ib { flex: 0 0 38px; }
@@ -745,7 +747,12 @@
   @keyframes gbad { 25% { transform: translateX(-56%); filter: grayscale(.6) drop-shadow(0 10px 10px rgba(0,0,0,.35)); } 75% { transform: translateX(-44%); } }
   .gring { position: absolute; bottom: 50px; left: 50%; width: 130px; height: 30px; border-radius: 50%; transform: translateX(-50%); z-index: 2; background: radial-gradient(closest-side, rgba(143,227,255,.75), rgba(143,227,255,0)); pointer-events: none; }
   .gdrop img, .gdrop svg { display: block; }
-  .gdrop.g-bottle img { height: 54px; filter: drop-shadow(0 0 10px rgba(255,220,140,.9)); }
+  .gdrop.g-drop img { width: 44px; height: 44px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(20,48,107,.25)); animation: dropwob 1.2s ease-in-out infinite; }
+  .gdrop.g-cloud img { width: 66px; height: 66px; object-fit: contain; filter: drop-shadow(0 6px 8px rgba(0,0,0,.25)); animation: cloudsh .5s ease-in-out infinite; }
+  .gdrop.g-bottle img { width: 58px; height: 66px; object-fit: contain; filter: drop-shadow(0 0 8px rgba(255,214,107,.8)); }
+  @keyframes dropwob { 50% { transform: scale(1.06, .95); } }
+  @keyframes cloudsh { 50% { transform: translateX(2px) rotate(2deg); } }
+  .gdrop.g-bottle img.old { height: 54px; filter: drop-shadow(0 0 10px rgba(255,220,140,.9)); }
   .gsplash { position: absolute; z-index: 4; width: 20px; height: 20px; border-radius: 50%; border: 3px solid #8FE3FF; transform: translate(-50%, -50%); animation: gsp .45s ease-out forwards; pointer-events: none; }
   @keyframes gsp { to { width: 90px; height: 90px; opacity: 0; } }
   .glegend { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 6px 0 14px; }
@@ -1457,7 +1464,8 @@
         data-n="可以真的玩：左右拖动（或用键盘 ← →）让守护者接住 5100 冰川水滴。30 秒一局，分数换积分和经验，每天 3 局。"
         data-ux="规则一句话说完；结算页直接显示<b>赚到多少积分、守护者涨了多少经验</b>，把小游戏和养成、积分连在一起。">
         <div class="garena" id="garena">
-          <div class="ghud"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="sc"><svg width="26" height="30" viewBox="0 0 26 32"><use href="#g-drop"/></svg><b id="gscore">0</b><small>今日剩 <span id="gleft">3</span> 局</small></div><div class="tm">⏱ <span id="gtime">30</span>s</div></div>
+          <div class="gbg"></div>
+          <div class="ghud"><button class="ib" data-back><svg width="20" height="20"><use href="#back"/></svg></button><div class="sc"><img src="assets/icons/g-drop.png" alt="" style="width:28px;height:28px;object-fit:contain"><b id="gscore">0</b><small>今日剩 <span id="gleft">3</span> 局</small></div><div class="tm">⏱ <span id="gtime">30</span>s</div></div>
           <div class="gbar"><i id="gbar"></i></div>
           <div class="gcombo" id="gcombo">连击 ×2</div>
           <div class="gring" id="gring"></div>
@@ -1473,9 +1481,9 @@
             <div class="h1" style="color:#fff">冰川接水</div>
             <p style="margin:0">左右拖动守护者，接住从雪山落下的冰川水</p>
             <div class="glegend">
-              <div><svg width="30" height="38" viewBox="0 0 26 32"><use href="#g-drop"/></svg><b>+10</b>冰川水滴</div>
-              <div><img src="assets/rw-bottle.png" alt=""><b>+30</b>5100 瓶</div>
-              <div><svg width="46" height="38" viewBox="0 0 64 48"><use href="#g-cloud"/></svg><b>−20</b>小乌云</div>
+              <div><img src="assets/icons/g-drop.png" alt=""><b>+10</b>冰川水滴</div>
+              <div><img src="assets/icons/g-bottle.png" alt=""><b>+30</b>5100 瓶</div>
+              <div><img src="assets/icons/g-cloud.png" alt=""><b>−20</b>小乌云</div>
             </div>
             <p style="font-size:12px;margin:-4px 0 8px">连续接住 5 个有连击 ×2 · 每 10 分 = 1 积分（每局最多 30）</p>
             <p style="font-size:12px;margin:0 0 12px;color:#FFE3A0"><img src="assets/icons/v-ticket.png" alt="" style="width:28px;vertical-align:middle;margin-right:4px">稀有掉落：金色 Village Grocer RM5 券，偶尔才会出现，接到直接放进券包（每天全场限量）</p>
@@ -2098,8 +2106,8 @@ function startGame() {
   const make = (force) => {
     const r = Math.random(), hard = elapsed / 30, type = force || (r < .12 ? "bottle" : r < .26 + hard * .12 ? "cloud" : "drop");
     const el = document.createElement("div"); el.className = "gdrop g-" + type;
-    el.innerHTML = type === "rare" ? `<div class="tk"><img src="assets/icons/v-ticket.png" alt=""><span>Village Grocer RM5</span></div>` : type === "bottle" ? `<img src="assets/rw-bottle.png" alt="">` : type === "cloud" ? `<svg width="58" height="44" viewBox="0 0 64 48"><use href="#g-cloud"/></svg>` : `<svg width="30" height="38" viewBox="0 0 26 32"><use href="#g-drop"/></svg>`;
-    const w = type === "cloud" ? 58 : type === "rare" ? 74 : 30, x = 10 + Math.random() * (arena.clientWidth - w - 20); el.style.left = x + "px"; arena.appendChild(el);
+    el.innerHTML = type === "rare" ? `<div class="tk"><img src="assets/icons/v-ticket.png" alt=""><span>Village Grocer RM5</span></div>` : type === "bottle" ? `<img src="assets/icons/g-bottle.png" alt="">` : type === "cloud" ? `<img src="assets/icons/g-cloud.png" alt="">` : `<img src="assets/icons/g-drop.png" alt="">`;
+    const w = type === "cloud" ? 66 : type === "rare" ? 74 : type === "bottle" ? 58 : 44, x = 10 + Math.random() * (arena.clientWidth - w - 20); el.style.left = x + "px"; arena.appendChild(el);
     drops.push({ el, x: x + w / 2, y: -60, v: type === "rare" ? 2.6 : (2.4 + Math.random() * 1.8) * (1 + hard * .7) * (type === "bottle" ? 1.25 : 1), type });
   };
   let spawn = setInterval(() => make(), 480);

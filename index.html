@@ -748,6 +748,7 @@
   .gring { position: absolute; bottom: 50px; left: 50%; width: 130px; height: 30px; border-radius: 50%; transform: translateX(-50%); z-index: 2; background: radial-gradient(closest-side, rgba(143,227,255,.75), rgba(143,227,255,0)); pointer-events: none; }
   .gdrop img, .gdrop svg { display: block; }
   .gdrop.g-drop img { width: 44px; height: 44px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(20,48,107,.25)); animation: dropwob 1.2s ease-in-out infinite; }
+  .gdrop.g-gold img { width: 50px; height: 50px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(255,214,107,.95)); animation: dropwob 1s ease-in-out infinite; }
   .gdrop.g-cloud img { width: 66px; height: 66px; object-fit: contain; filter: drop-shadow(0 6px 8px rgba(0,0,0,.25)); animation: cloudsh .5s ease-in-out infinite; }
   .gdrop.g-bottle img { width: 58px; height: 66px; object-fit: contain; filter: drop-shadow(0 0 8px rgba(255,214,107,.8)); }
   @keyframes dropwob { 50% { transform: scale(1.06, .95); } }
@@ -755,10 +756,10 @@
   .gdrop.g-bottle img.old { height: 54px; filter: drop-shadow(0 0 10px rgba(255,220,140,.9)); }
   .gsplash { position: absolute; z-index: 4; width: 20px; height: 20px; border-radius: 50%; border: 3px solid #8FE3FF; transform: translate(-50%, -50%); animation: gsp .45s ease-out forwards; pointer-events: none; }
   @keyframes gsp { to { width: 90px; height: 90px; opacity: 0; } }
-  .glegend { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 6px 0 14px; }
-  .glegend div { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); border-radius: 14px; padding: 10px 4px 8px; font-size: 12px; display: grid; justify-items: center; gap: 4px; }
+  .glegend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 6px 0 14px; }
+  .glegend div { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); border-radius: 14px; padding: 8px 2px 6px; font-size: 11px; display: grid; justify-items: center; gap: 4px; }
   .glegend b { font: 700 15px var(--f-serif); color: var(--gold-light); }
-  .glegend img { height: 40px; }
+  .glegend img { height: 34px; }
   .gstart .gp { height: 120px; width: auto; margin: 0 auto 4px; filter: drop-shadow(0 8px 10px rgba(0,0,0,.3)); }
   .gstars { font-size: 30px; letter-spacing: 4px; color: rgba(255,255,255,.25); }
   .gstars i { font-style: normal; color: #FFD66B; text-shadow: 0 0 12px rgba(255,214,107,.7); }
@@ -1482,6 +1483,7 @@
             <p style="margin:0">左右拖动守护者，接住从雪山落下的冰川水</p>
             <div class="glegend">
               <div><img src="assets/icons/g-drop.png" alt=""><b>+10</b>冰川水滴</div>
+              <div><img src="assets/icons/g-golddrop.png" alt=""><b>+20</b>金色水滴</div>
               <div><img src="assets/icons/g-bottle.png" alt=""><b>+30</b>5100 瓶</div>
               <div><img src="assets/icons/g-cloud.png" alt=""><b>−20</b>小乌云</div>
             </div>
@@ -2104,10 +2106,10 @@ function startGame() {
   // 稀有掉落：每局约 3 成机会出现 1 张（正式版由后台控制，约 1–2%，每天全场限量）
   const rareAt = !GAME.rareToday && Math.random() < .3 ? 8 + Math.floor(Math.random() * 14) : -1; let gotRare = false;
   const make = (force) => {
-    const r = Math.random(), hard = elapsed / 30, type = force || (r < .12 ? "bottle" : r < .26 + hard * .12 ? "cloud" : "drop");
+    const r = Math.random(), hard = elapsed / 30, type = force || (r < .05 ? "gold" : r < .17 ? "bottle" : r < .31 + hard * .12 ? "cloud" : "drop");  // 金色水滴 5%
     const el = document.createElement("div"); el.className = "gdrop g-" + type;
-    el.innerHTML = type === "rare" ? `<div class="tk"><img src="assets/icons/v-ticket.png" alt=""><span>Village Grocer RM5</span></div>` : type === "bottle" ? `<img src="assets/icons/g-bottle.png" alt="">` : type === "cloud" ? `<img src="assets/icons/g-cloud.png" alt="">` : `<img src="assets/icons/g-drop.png" alt="">`;
-    const w = type === "cloud" ? 66 : type === "rare" ? 74 : type === "bottle" ? 58 : 44, x = 10 + Math.random() * (arena.clientWidth - w - 20); el.style.left = x + "px"; arena.appendChild(el);
+    el.innerHTML = type === "rare" ? `<div class="tk"><img src="assets/icons/v-ticket.png" alt=""><span>Village Grocer RM5</span></div>` : type === "gold" ? `<img src="assets/icons/g-golddrop.png" alt="">` : type === "bottle" ? `<img src="assets/icons/g-bottle.png" alt="">` : type === "cloud" ? `<img src="assets/icons/g-cloud.png" alt="">` : `<img src="assets/icons/g-drop.png" alt="">`;
+    const w = type === "cloud" ? 66 : type === "rare" ? 74 : type === "bottle" ? 58 : type === "gold" ? 50 : 44, x = 10 + Math.random() * (arena.clientWidth - w - 20); el.style.left = x + "px"; arena.appendChild(el);
     drops.push({ el, x: x + w / 2, y: -60, v: type === "rare" ? 2.6 : (2.4 + Math.random() * 1.8) * (1 + hard * .7) * (type === "bottle" ? 1.25 : 1), type });
   };
   let spawn = setInterval(() => make(), 480);
@@ -2124,9 +2126,9 @@ function startGame() {
         let pts;
         if (d.type === "rare") { pts = 0; gotRare = true; GAME.rareToday = true; anim("hit"); splash(d.x, catchY + 30); addVoucher({ m: "Village Grocer", v: "RM5 现金券", c: "满 RM30 可用", col: "#2F6B45", ic: "v-ticket", logo: "logos/village-grocer.jpg", tag: "VG", rare: true }); fx("🎉 稀有券！", d.x, d.y, "#FFD66B"); }
         else if (d.type === "cloud") { pts = -20; combo = 0; anim("bad"); if (navigator.vibrate) navigator.vibrate(60); }
-        else { combo++; best = Math.max(best, combo); pts = (d.type === "bottle" ? 30 : 10) * (combo >= 5 ? 2 : 1); anim("hit"); splash(d.x, catchY + 30); }
+        else { combo++; best = Math.max(best, combo); pts = (d.type === "bottle" ? 30 : d.type === "gold" ? 20 : 10) * (combo >= 5 ? 2 : 1); anim("hit"); splash(d.x, catchY + 30); }
         score = Math.max(0, score + pts); showCombo();
-        if (d.type !== "rare") fx(pts > 0 ? `+${pts}` : `${pts}`, d.x, d.y, pts < 0 ? "#FFB4AB" : d.type === "bottle" ? "#FFD66B" : null); $("gscore").textContent = score; d.el.remove(); drops.splice(i, 1);
+        if (d.type !== "rare") fx(pts > 0 ? `+${pts}` : `${pts}`, d.x, d.y, pts < 0 ? "#FFB4AB" : d.type === "bottle" || d.type === "gold" ? "#FFD66B" : null); $("gscore").textContent = score; d.el.remove(); drops.splice(i, 1);
       } else if (d.y > H) { if (d.type !== "cloud" && d.type !== "rare") { combo = 0; showCombo(); } d.el.remove(); drops.splice(i, 1); }
     }
     if (GAME.running) raf = requestAnimationFrame(loop);
